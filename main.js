@@ -365,3 +365,38 @@ ipcMain.handle('list-running-games', () => {
 });
 
 ipcMain.handle('user-data-path', () => app.getPath('userData'));
+
+// ===== Steam Server Status (via crowbar.steamstat.us) =====
+ipcMain.handle('get-steam-status', () => {
+    return new Promise((resolve) => {
+        const options = {
+            hostname: 'crowbar.steamstat.us',
+            path: '/Barney',
+            headers: { 'User-Agent': 'NexusSwitcher' },
+            timeout: 6000
+        };
+        const req = https.get(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    // Barney returns: { services: { "Steam Store": ["normal", "Operating Normally", timestamp], ... } }
+                    const services = parsed.services || {};
+                    const result = {};
+                    for (const key in services) {
+                        const v = services[key];
+                        if (Array.isArray(v) && v.length >= 2) {
+                            result[key] = { status: v[0], title: v[1] };
+                        }
+                    }
+                    resolve({ success: true, services: result });
+                } catch(e) {
+                    resolve({ success: false, error: 'parse_error' });
+                }
+            });
+        });
+        req.on('error', () => resolve({ success: false, error: 'network' }));
+        req.on('timeout', () => { req.destroy(); resolve({ success: false, error: 'timeout' }); });
+    });
+});

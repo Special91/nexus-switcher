@@ -127,5 +127,47 @@
     "loading": "جاري التحميل...",
     "error": "خطأ",
     "success": "نجح"
+  },
+  "toast": {
+    "account_switched": "تم التبديل إلى الحساب",
+    "account_switch_failed": "فشل تبديل الحساب",
+    "game_launched": "تم تشغيل اللعبة",
+    "boost_complete": "تم تعزيز الأداء",
+    "boost_freed": "تم تحرير الذاكرة",
+    "backup_success": "تم إنشاء النسخة الاحتياطية",
+    "backup_failed": "فشل إنشاء النسخة",
+    "restore_success": "تمت الاستعادة بنجاح",
+    "update_available": "يتوفر تحديث جديد",
+    "up_to_date": "أنت تستخدم أحدث إصدار",
+    "notes_saved": "تم حفظ الملاحظات",
+    "copied_clipboard": "تم النسخ إلى الحافظة",
+    "encryption_enabled": "تم تفعيل التشفير",
+    "encryption_disabled": "تم تعطيل التشفير",
+    "language_changed": "تم تغيير اللغة"
+  },
+  "servers": {
+    "title": "حالة خوادم Steam",
+    "checking": "جاري الفحص...",
+    "normal": "يعمل بشكل طبيعي",
+    "minor": "مشاكل بسيطة",
+    "major": "مشاكل كبيرة",
+    "offline": "غير متصل",
+    "no_data": "تعذر جلب البيانات",
+    "refresh": "تحديث",
+    "last_checked": "آخر فحص"
+  },
+  "gameinfo": {
+    "title": "معلومات اللعبة",
+    "size_on_disk": "الحجم على القرص",
+    "last_updated": "آخر تحديث",
+    "last_played": "آخر تشغيل",
+    "total_playtime": "إجمالي وقت اللعب",
+    "sessions": "الجلسات",
+    "install_dir": "مجلد التثبيت",
+    "open_folder": "فتح المجلد",
+    "view_steam_page": "صفحة في Steam",
+    "no_data": "لا توجد بيانات إضافية",
+    "ago": "قبل",
+    "never": "لم تشغّل بعد"
   }
 }

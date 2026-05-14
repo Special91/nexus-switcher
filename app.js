@@ -999,8 +999,9 @@ function renderAccountsGrid(users) {
             // Copy ID handler
             popup.querySelector('.copy-id-btn').addEventListener('click', () => {
                 navigator.clipboard.writeText(steamId);
+                showToast(t('toast.copied_clipboard'), 'success');
                 const copyBtn = popup.querySelector('.copy-id-btn');
-                copyBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success);"></i> تم النسخ';
+                copyBtn.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i> ${t('account.copied')}`;
                 setTimeout(() => popup.remove(), 800);
             });
             
@@ -1076,6 +1077,9 @@ async function deleteSteamAccount(steamId) {
 }
 
 async function switchSteamAccount(accountName, appIdToLaunch = null) {
+    if (typeof showToast === 'function') {
+        showToast(`${t('toast.account_switched')}: ${accountName}`, 'success', { duration: 3000 });
+    }
     return new Promise((resolve) => {
         exec('taskkill /F /IM steam.exe /IM steamwebhelper.exe /T', (error) => {
             setTimeout(() => {
@@ -1358,13 +1362,27 @@ async function loadInstalledGames() {
                 <p class="steam-id" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">${getPlatformName(game.platform)} ${accountBadgeHtml}</p>
                 ${playtimeHtml}
             </div>
-            <div class="card-actions">
-                <button class="btn btn-switch launch-game-btn" data-platform="${game.platform}" data-id="${game.id}" data-exe="${game.exe || ''}" data-owner="${game.ownerId || ''}">
-                    <i class="fa-solid fa-play"></i> تشغيل
+            <div class="card-actions" style="display: flex; gap: 0.4rem;">
+                <button class="btn btn-switch launch-game-btn" data-platform="${game.platform}" data-id="${game.id}" data-exe="${game.exe || ''}" data-owner="${game.ownerId || ''}" style="flex: 1;">
+                    <i class="fa-solid fa-play"></i> ${t('game.launch')}
+                </button>
+                <button class="btn-icon game-info-btn" data-game-id="${game.id}" data-game-name="${game.name}" data-platform="${game.platform}" title="${t('gameinfo.title')}" style="width: 36px; height: 36px;">
+                    <i class="fa-solid fa-circle-info"></i>
                 </button>
             </div>
         `;
         grid.appendChild(card);
+    });
+    
+    // Wire game info buttons
+    document.querySelectorAll('.game-info-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const gameId = this.getAttribute('data-game-id');
+            const gameName = this.getAttribute('data-game-name');
+            const platform = this.getAttribute('data-platform');
+            openGameInfoModal(gameId, gameName, platform);
+        });
     });
     
     document.querySelectorAll('.change-cover-btn').forEach(btn => {
@@ -1627,6 +1645,7 @@ function openNotesModal(steamId, personaName) {
         }
         saveAccountNotes();
         overlay.remove();
+        showToast(t('toast.notes_saved'), 'success');
         loadSteamAccounts(); // refresh to update notes badge
     });
     overlay.addEventListener('click', (e) => {
@@ -1735,8 +1754,10 @@ async function checkForUpdates(silent = false) {
             `;
             const dlBtn = document.getElementById('downloadUpdateBtn');
             if (dlBtn) dlBtn.addEventListener('click', () => ipcRenderer.invoke('open-external', result.url));
+            if (!silent) showToast(`${t('toast.update_available')}: v${result.latest}`, 'info', { title: t('settings.check_updates'), duration: 6000 });
         } else {
             status.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${t('settings.up_to_date')} (v${result.current})</span>`;
+            if (!silent) showToast(t('toast.up_to_date'), 'success');
         }
     }
     return result;
@@ -1778,9 +1799,11 @@ async function exportFullBackup() {
         if (status) {
             status.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${t('backup.success')}</span>`;
         }
+        showToast(t('toast.backup_success'), 'success', { title: t('backup.title') });
     } catch(e) {
         console.error(e);
         if (status) status.innerText = t('backup.error');
+        showToast(t('toast.backup_failed'), 'error');
     }
 }
 
@@ -1817,10 +1840,12 @@ async function importFullBackup() {
         }
         
         if (status) status.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${t('backup.success')}</span>`;
+        showToast(t('toast.restore_success'), 'success');
         setTimeout(() => location.reload(), 1500);
     } catch(e) {
         console.error(e);
         if (status) status.innerText = t('backup.error');
+        showToast(t('backup.error'), 'error');
     }
 }
 
@@ -1839,8 +1864,10 @@ window.addEventListener('DOMContentLoaded', () => {
         if (btn.getAttribute('data-lang') === currentLang) btn.classList.add('active');
         btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
+            if (lang === currentLang) return;
             setLanguage(lang);
             langButtons.forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
+            showToast(t('toast.language_changed'), 'info');
             // Refresh dynamic content
             setTimeout(() => {
                 if (typeof loadSteamAccounts === 'function') loadSteamAccounts();
@@ -1857,7 +1884,7 @@ window.addEventListener('DOMContentLoaded', () => {
         encToggle.addEventListener('click', async () => {
             const available = await ipcRenderer.invoke('encryption-available');
             if (!available) {
-                alert(currentLang === 'ar' ? 'التشفير غير متاح في هذا النظام' : 'Encryption not available on this system');
+                showToast(currentLang === 'ar' ? 'التشفير غير متاح في هذا النظام' : 'Encryption not available on this system', 'warning');
                 return;
             }
             const newState = !(localStorage.getItem('nexus_encryption') === 'true');
@@ -1867,6 +1894,7 @@ window.addEventListener('DOMContentLoaded', () => {
             saveGameAccounts();
             saveAccountNotes();
             savePlaytime();
+            showToast(newState ? t('toast.encryption_enabled') : t('toast.encryption_disabled'), newState ? 'success' : 'info');
         });
     }
     
@@ -1882,12 +1910,21 @@ window.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', () => {
             const target = item.getAttribute('data-target');
             if (target === 'performance') {
-                setTimeout(startPerformanceMonitor, 100);
+                setTimeout(() => {
+                    startPerformanceMonitor();
+                    renderServerStatusWidget();
+                }, 100);
             } else {
                 stopPerformanceMonitor();
             }
         });
     });
+    
+    // Server status refresh button
+    const refreshServerBtn = document.getElementById('refreshServerStatusBtn');
+    if (refreshServerBtn) {
+        refreshServerBtn.addEventListener('click', () => renderServerStatusWidget());
+    }
     
     // Backup/Restore buttons
     const exportBtn = document.getElementById('btnExportBackup');
@@ -1912,3 +1949,272 @@ function updateToggleButton(btn, isEnabled) {
         btn.classList.remove('active-acc-btn');
     }
 }
+
+// ===========================================
+// ===== Toast Notification System =====
+// ===========================================
+function showToast(message, type = 'info', options = {}) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const { title = '', duration = 3500, icon = null } = options;
+    const iconMap = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        warning: 'fa-triangle-exclamation',
+        info: 'fa-circle-info'
+    };
+    const iconClass = icon || iconMap[type] || iconMap.info;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fa-solid ${iconClass}"></i></div>
+        <div class="toast-content">
+            ${title ? `<div class="toast-title">${title}</div>` : ''}
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" aria-label="close"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    container.appendChild(toast);
+    
+    const closeBtn = toast.querySelector('.toast-close');
+    const removeToast = () => {
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 250);
+    };
+    closeBtn.addEventListener('click', removeToast);
+    
+    if (duration > 0) {
+        setTimeout(removeToast, duration);
+    }
+    
+    return toast;
+}
+
+// Expose to window for easy debugging
+window.showToast = showToast;
+
+// ===========================================
+// ===== Steam Server Status Widget =====
+// ===========================================
+let lastServerStatusCheck = 0;
+let cachedServerStatus = null;
+
+async function fetchSteamServerStatus(force = false) {
+    const now = Date.now();
+    // Cache for 60 seconds to avoid hammering the API
+    if (!force && cachedServerStatus && (now - lastServerStatusCheck) < 60000) {
+        return cachedServerStatus;
+    }
+    const result = await ipcRenderer.invoke('get-steam-status');
+    if (result.success) {
+        cachedServerStatus = result;
+        lastServerStatusCheck = now;
+    }
+    return result;
+}
+
+function getStatusClass(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'normal' || s === 'good') return 'normal';
+    if (s === 'minor' || s === 'slow') return 'minor';
+    if (s === 'major' || s === 'critical') return 'major';
+    if (s === 'offline' || s === 'down') return 'offline';
+    return 'normal';
+}
+
+function getStatusLabel(status) {
+    const cls = getStatusClass(status);
+    return t(`servers.${cls}`);
+}
+
+async function renderServerStatusWidget() {
+    const container = document.getElementById('serverStatusContent');
+    if (!container) return;
+    
+    container.innerHTML = `<div style="text-align: center; padding: 1rem; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> ${t('servers.checking')}</div>`;
+    
+    const result = await fetchSteamServerStatus(true);
+    
+    if (!result.success) {
+        container.innerHTML = `<div style="text-align: center; padding: 1rem; color: var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> ${t('servers.no_data')}</div>`;
+        return;
+    }
+    
+    // Filter to most useful services
+    const priorityServices = [
+        'Steam Store', 'Community', 'Web API', 'Steam Connection Managers',
+        'CS2 MM', 'CS2 SL', 'Dota 2 MM', 'Dota 2 SL', 'TF2 MM',
+        'CSGO MM', 'CSGO SL'
+    ];
+    
+    const services = result.services;
+    let html = '';
+    
+    // Show priority services that exist in response
+    priorityServices.forEach(name => {
+        if (services[name]) {
+            const cls = getStatusClass(services[name].status);
+            html += `
+                <div class="server-row">
+                    <span class="server-name">${name}</span>
+                    <span class="server-status-badge ${cls}">
+                        <span class="pulse"></span>
+                        ${getStatusLabel(services[name].status)}
+                    </span>
+                </div>
+            `;
+        }
+    });
+    
+    if (!html) {
+        // Fallback: show first 8 services
+        let count = 0;
+        for (const name in services) {
+            if (count++ >= 8) break;
+            const cls = getStatusClass(services[name].status);
+            html += `
+                <div class="server-row">
+                    <span class="server-name">${name}</span>
+                    <span class="server-status-badge ${cls}"><span class="pulse"></span> ${getStatusLabel(services[name].status)}</span>
+                </div>
+            `;
+        }
+    }
+    
+    const lastTime = new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US');
+    container.innerHTML = html + `<div style="text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.75rem;">${t('servers.last_checked')}: ${lastTime}</div>`;
+}
+
+// ===========================================
+// ===== Extended Game Info Modal =====
+// ===========================================
+function readSteamAcfData(gameId) {
+    if (!steamPath) return null;
+    try {
+        const acfPath = path.join(steamPath, 'steamapps', `appmanifest_${gameId}.acf`);
+        if (!fs.existsSync(acfPath)) return null;
+        const content = fs.readFileSync(acfPath, 'utf-8');
+        const parsed = vdf.parse(content);
+        const state = parsed.AppState || {};
+        return {
+            name: state.name,
+            installDir: state.installdir ? path.join(steamPath, 'steamapps', 'common', state.installdir) : null,
+            sizeOnDisk: state.SizeOnDisk ? parseInt(state.SizeOnDisk) : 0,
+            lastUpdated: state.LastUpdated ? parseInt(state.LastUpdated) : 0,
+            lastOwner: state.LastOwner,
+            buildId: state.buildid
+        };
+    } catch(e) { console.error('readSteamAcfData', e); return null; }
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '-';
+    const gb = bytes / (1024 * 1024 * 1024);
+    if (gb >= 1) return gb.toFixed(2) + ' GB';
+    const mb = bytes / (1024 * 1024);
+    return mb.toFixed(1) + ' MB';
+}
+
+function formatDate(timestamp) {
+    if (!timestamp) return '-';
+    const date = new Date(timestamp * 1000);
+    const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (days === 0) return currentLang === 'ar' ? 'اليوم' : 'Today';
+    if (days === 1) return currentLang === 'ar' ? 'أمس' : 'Yesterday';
+    if (days < 30) return `${days} ${currentLang === 'ar' ? 'يوم' : 'days'} ${t('gameinfo.ago')}`;
+    return date.toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US');
+}
+
+function openGameInfoModal(gameId, gameName, platform = 'steam', bannerUrl = null) {
+    const existing = document.getElementById('gameInfoOverlay');
+    if (existing) existing.remove();
+    
+    const acfData = platform === 'steam' ? readSteamAcfData(gameId) : null;
+    const playtime = playtimeData[gameId];
+    const linkedAccount = platform === 'steam' ? resolveGameAccount(gameId, acfData?.lastOwner) : null;
+    
+    // Build banner
+    const banner = bannerUrl 
+        ? `<div class="game-info-banner" style="background-image: url('${bannerUrl}');"></div>`
+        : (platform === 'steam'
+            ? `<div class="game-info-banner" style="background-image: url('https://cdn.akamai.steamstatic.com/steam/apps/${gameId}/library_hero.jpg');"></div>`
+            : '');
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'gameInfoOverlay';
+    overlay.className = 'modal-overlay active';
+    overlay.innerHTML = `
+        <div class="modal game-info-modal">
+            ${banner}
+            <h2 style="margin-bottom: 0.25rem;">${gameName}</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                ${getPlatformName(platform)}
+                ${linkedAccount ? `<span style="margin: 0 0.5rem;">•</span> <i class="fa-solid fa-user"></i> ${linkedAccount}` : ''}
+            </p>
+            
+            <div class="game-info-stats">
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-clock"></i> ${t('gameinfo.total_playtime')}</div>
+                    <div class="value">${playtime && playtime.totalSeconds ? formatPlaytime(playtime.totalSeconds) : t('gameinfo.never')}</div>
+                </div>
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-calendar-day"></i> ${t('gameinfo.last_played')}</div>
+                    <div class="value small">${playtime && playtime.lastPlayed ? formatLastPlayed(playtime.lastPlayed) : '-'}</div>
+                </div>
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-hard-drive"></i> ${t('gameinfo.size_on_disk')}</div>
+                    <div class="value">${acfData ? formatBytes(acfData.sizeOnDisk) : '-'}</div>
+                </div>
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-arrows-rotate"></i> ${t('gameinfo.last_updated')}</div>
+                    <div class="value small">${acfData ? formatDate(acfData.lastUpdated) : '-'}</div>
+                </div>
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-play"></i> ${t('gameinfo.sessions')}</div>
+                    <div class="value">${playtime?.sessions || 0}</div>
+                </div>
+                <div class="game-stat-card">
+                    <div class="label"><i class="fa-solid fa-fingerprint"></i> ID</div>
+                    <div class="value small">${gameId}</div>
+                </div>
+            </div>
+            
+            ${acfData?.installDir ? `
+                <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 1rem; font-size: 0.78rem; color: var(--text-muted); word-break: break-all;">
+                    <i class="fa-solid fa-folder" style="margin-left: 0.4rem;"></i> ${acfData.installDir}
+                </div>
+            ` : ''}
+            
+            <div class="modal-actions" style="flex-wrap: wrap; gap: 0.5rem;">
+                ${acfData?.installDir ? `<button class="btn" id="gameInfoOpenFolder"><i class="fa-solid fa-folder-open"></i> ${t('gameinfo.open_folder')}</button>` : ''}
+                ${platform === 'steam' ? `<button class="btn" id="gameInfoSteamPage"><i class="fa-brands fa-steam"></i> ${t('gameinfo.view_steam_page')}</button>` : ''}
+                <button class="btn btn-primary" id="gameInfoClose">${t('modal.close')}</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Wire up actions
+    const closeBtn = overlay.querySelector('#gameInfoClose');
+    const closeModal = () => overlay.remove();
+    closeBtn?.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+    
+    const openFolderBtn = overlay.querySelector('#gameInfoOpenFolder');
+    if (openFolderBtn && acfData?.installDir) {
+        openFolderBtn.addEventListener('click', () => {
+            exec(`explorer "${acfData.installDir}"`);
+        });
+    }
+    
+    const steamPageBtn = overlay.querySelector('#gameInfoSteamPage');
+    if (steamPageBtn) {
+        steamPageBtn.addEventListener('click', () => {
+            ipcRenderer.invoke('open-external', `https://store.steampowered.com/app/${gameId}/`);
+        });
+    }
+}
+
+window.openGameInfoModal = openGameInfoModal;

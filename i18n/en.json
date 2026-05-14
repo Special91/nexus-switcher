@@ -127,5 +127,47 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success"
+  },
+  "toast": {
+    "account_switched": "Switched to account",
+    "account_switch_failed": "Failed to switch account",
+    "game_launched": "Game launched",
+    "boost_complete": "Performance boosted",
+    "boost_freed": "Memory freed",
+    "backup_success": "Backup created",
+    "backup_failed": "Backup failed",
+    "restore_success": "Restored successfully",
+    "update_available": "Update available",
+    "up_to_date": "You're up to date",
+    "notes_saved": "Notes saved",
+    "copied_clipboard": "Copied to clipboard",
+    "encryption_enabled": "Encryption enabled",
+    "encryption_disabled": "Encryption disabled",
+    "language_changed": "Language changed"
+  },
+  "servers": {
+    "title": "Steam Server Status",
+    "checking": "Checking...",
+    "normal": "Operating normally",
+    "minor": "Minor issues",
+    "major": "Major issues",
+    "offline": "Offline",
+    "no_data": "Could not fetch data",
+    "refresh": "Refresh",
+    "last_checked": "Last checked"
+  },
+  "gameinfo": {
+    "title": "Game Info",
+    "size_on_disk": "Size on Disk",
+    "last_updated": "Last Updated",
+    "last_played": "Last Played",
+    "total_playtime": "Total Playtime",
+    "sessions": "Sessions",
+    "install_dir": "Install Directory",
+    "open_folder": "Open Folder",
+    "view_steam_page": "Steam Page",
+    "no_data": "No additional data",
+    "ago": "ago",
+    "never": "Never played"
   }
 }

@@ -236,6 +236,19 @@
                                 <div><span data-i18n="performance.uptime">وقت التشغيل</span>: <strong id="perfUptime" style="color: var(--text-main);">-</strong></div>
                             </div>
                         </div>
+                        
+                        <!-- Steam Server Status -->
+                        <div class="account-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <h3 style="margin: 0;"><i class="fa-brands fa-steam" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="servers.title">حالة خوادم Steam</span></h3>
+                                <button class="btn" id="refreshServerStatusBtn" style="padding: 0.35rem 0.7rem; font-size: 0.78rem;">
+                                    <i class="fa-solid fa-rotate"></i> <span data-i18n="servers.refresh">تحديث</span>
+                                </button>
+                            </div>
+                            <div id="serverStatusContent">
+                                <div style="text-align: center; padding: 1rem; color: var(--text-muted);" data-i18n="servers.checking">جاري الفحص...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -425,6 +438,9 @@
 
     <!-- Hidden File Input for Custom Covers -->
     <input type="file" id="coverUploadInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer"></div>
 
     <script src="app.js"></script>
 </body>

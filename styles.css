@@ -809,6 +809,279 @@ body::before {
     font-size: 0.85rem;
 }
 
+/* ===== Toast Notifications ===== */
+#toastContainer {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    pointer-events: none;
+    max-width: 360px;
+}
+
+[dir="ltr"] #toastContainer {
+    left: auto;
+    right: 20px;
+}
+
+.toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    background: rgba(20, 24, 32, 0.95);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    pointer-events: auto;
+    animation: toastSlideIn 0.3s ease forwards;
+    min-width: 280px;
+}
+
+[dir="ltr"] .toast {
+    border-left: 1px solid var(--border);
+    border-right: 3px solid var(--primary);
+}
+
+.toast.toast-hide {
+    animation: toastSlideOut 0.25s ease forwards;
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.85rem;
+}
+
+.toast-content {
+    flex: 1;
+    line-height: 1.35;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.toast-message {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+    transition: color 0.15s ease;
+}
+
+.toast-close:hover {
+    color: var(--text-main);
+}
+
+.toast-success {
+    border-left-color: var(--success);
+}
+.toast-success .toast-icon {
+    background: rgba(108, 203, 95, 0.15);
+    color: var(--success);
+}
+
+.toast-error {
+    border-left-color: var(--danger);
+}
+.toast-error .toast-icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.toast-warning {
+    border-left-color: var(--warning);
+}
+.toast-warning .toast-icon {
+    background: rgba(252, 225, 0, 0.15);
+    color: var(--warning);
+}
+
+.toast-info {
+    border-left-color: var(--primary);
+}
+.toast-info .toast-icon {
+    background: rgba(96, 205, 255, 0.15);
+    color: var(--primary);
+}
+
+[dir="ltr"] .toast-success { border-right-color: var(--success); }
+[dir="ltr"] .toast-error { border-right-color: var(--danger); }
+[dir="ltr"] .toast-warning { border-right-color: var(--warning); }
+[dir="ltr"] .toast-info { border-right-color: var(--primary); }
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    to {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.97);
+        margin-top: -50px;
+    }
+}
+
+/* ===== Steam Server Status Widget ===== */
+.steam-status-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.steam-status-widget h3 {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.server-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+}
+
+.server-row:last-child {
+    border-bottom: none;
+}
+
+.server-name {
+    color: var(--text-secondary);
+}
+
+.server-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+}
+
+.server-status-badge.normal {
+    background: rgba(108, 203, 95, 0.12);
+    color: var(--success);
+}
+
+.server-status-badge.minor {
+    background: rgba(252, 225, 0, 0.12);
+    color: var(--warning);
+}
+
+.server-status-badge.major {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+}
+
+.server-status-badge.offline {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.server-status-badge .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* ===== Game Info Modal ===== */
+.game-info-modal {
+    max-width: 540px;
+}
+
+.game-info-banner {
+    width: calc(100% + 3rem);
+    margin: -1.5rem -1.5rem 1rem -1.5rem;
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    position: relative;
+}
+
+.game-info-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(20, 24, 32, 0.95) 100%);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.game-info-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.game-stat-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+.game-stat-card .label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.game-stat-card .value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.game-stat-card .value.small {
+    font-size: 0.85rem;
+}
+
 /* Modal textarea */
 .modal textarea {
     background: var(--bg-elevated);
