@@ -366,37 +366,57 @@ ipcMain.handle('list-running-games', () => {
 
 ipcMain.handle('user-data-path', () => app.getPath('userData'));
 
-// ===== Steam Server Status (via crowbar.steamstat.us) =====
-ipcMain.handle('get-steam-status', () => {
+// ===== Steam Server Status (direct HTTP probes - more reliable) =====
+function probeService(hostname, path = '/', timeoutMs = 5000) {
     return new Promise((resolve) => {
-        const options = {
-            hostname: 'crowbar.steamstat.us',
-            path: '/Barney',
-            headers: { 'User-Agent': 'NexusSwitcher' },
-            timeout: 6000
-        };
-        const req = https.get(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    const parsed = JSON.parse(data);
-                    // Barney returns: { services: { "Steam Store": ["normal", "Operating Normally", timestamp], ... } }
-                    const services = parsed.services || {};
-                    const result = {};
-                    for (const key in services) {
-                        const v = services[key];
-                        if (Array.isArray(v) && v.length >= 2) {
-                            result[key] = { status: v[0], title: v[1] };
-                        }
-                    }
-                    resolve({ success: true, services: result });
-                } catch(e) {
-                    resolve({ success: false, error: 'parse_error' });
-                }
-            });
+        const start = Date.now();
+        const req = https.request({
+            hostname,
+            path,
+            method: 'HEAD',
+            timeout: timeoutMs,
+            headers: { 'User-Agent': 'NexusSwitcher/1.0' }
+        }, (res) => {
+            const latency = Date.now() - start;
+            const status = res.statusCode;
+            // Determine status: 2xx/3xx = normal, 5xx = major, others = minor
+            let label;
+            if (status >= 200 && status < 400) label = latency > 2000 ? 'minor' : 'normal';
+            else if (status >= 500) label = 'major';
+            else label = 'minor';
+            resolve({ status: label, latency, httpCode: status });
+            res.resume();
         });
-        req.on('error', () => resolve({ success: false, error: 'network' }));
-        req.on('timeout', () => { req.destroy(); resolve({ success: false, error: 'timeout' }); });
+        req.on('error', () => resolve({ status: 'offline', latency: Date.now() - start }));
+        req.on('timeout', () => { req.destroy(); resolve({ status: 'offline', latency: timeoutMs }); });
+        req.end();
     });
+}
+
+ipcMain.handle('get-steam-status', async () => {
+    try {
+        // Probe key Steam services in parallel
+        const services = {
+            'Steam Store': await probeService('store.steampowered.com'),
+            'Community': await probeService('steamcommunity.com'),
+            'Web API': await probeService('api.steampowered.com', '/ISteamWebAPIUtil/GetServerInfo/v1/'),
+            'CDN (Akamai)': await probeService('cdn.akamai.steamstatic.com'),
+            'CDN (Cloudflare)': await probeService('cdn.cloudflare.steamstatic.com'),
+            'Help Site': await probeService('help.steampowered.com'),
+            'Partner Network': await probeService('partner.steamgames.com')
+        };
+        
+        const result = {};
+        for (const name in services) {
+            const s = services[name];
+            const title = s.status === 'normal' ? `${s.latency}ms` : 
+                         s.status === 'minor' ? `Slow (${s.latency}ms)` :
+                         s.status === 'offline' ? 'Offline' : 'Issues';
+            result[name] = { status: s.status, title, latency: s.latency };
+        }
+        
+        return { success: true, services: result };
+    } catch(e) {
+        return { success: false, error: e.message };
+    }
 });

@@ -1933,10 +1933,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const importBtn = document.getElementById('btnImportBackup');
     if (importBtn) importBtn.addEventListener('click', importFullBackup);
     
-    // Show app version
+    // Show app version (sidebar + About section)
     ipcRenderer.invoke('app-version').then(v => {
         const verEl = document.getElementById('appVersionDisplay');
         if (verEl) verEl.innerText = `v${v}`;
+        const verEl2 = document.getElementById('appVersionDisplay2');
+        if (verEl2) verEl2.innerText = `v${v}`;
     });
 });
 
@@ -2042,45 +2044,23 @@ async function renderServerStatusWidget() {
         return;
     }
     
-    // Filter to most useful services
-    const priorityServices = [
-        'Steam Store', 'Community', 'Web API', 'Steam Connection Managers',
-        'CS2 MM', 'CS2 SL', 'Dota 2 MM', 'Dota 2 SL', 'TF2 MM',
-        'CSGO MM', 'CSGO SL'
-    ];
-    
     const services = result.services;
     let html = '';
     
-    // Show priority services that exist in response
-    priorityServices.forEach(name => {
-        if (services[name]) {
-            const cls = getStatusClass(services[name].status);
-            html += `
-                <div class="server-row">
-                    <span class="server-name">${name}</span>
-                    <span class="server-status-badge ${cls}">
-                        <span class="pulse"></span>
-                        ${getStatusLabel(services[name].status)}
-                    </span>
-                </div>
-            `;
-        }
-    });
-    
-    if (!html) {
-        // Fallback: show first 8 services
-        let count = 0;
-        for (const name in services) {
-            if (count++ >= 8) break;
-            const cls = getStatusClass(services[name].status);
-            html += `
-                <div class="server-row">
-                    <span class="server-name">${name}</span>
-                    <span class="server-status-badge ${cls}"><span class="pulse"></span> ${getStatusLabel(services[name].status)}</span>
-                </div>
-            `;
-        }
+    // Show all services in their natural order
+    for (const name in services) {
+        const svc = services[name];
+        const cls = getStatusClass(svc.status);
+        const latencyText = svc.latency ? ` <span style="color: var(--text-muted); font-weight: 400; font-size: 0.7rem;">${svc.latency}ms</span>` : '';
+        html += `
+            <div class="server-row">
+                <span class="server-name">${name}</span>
+                <span class="server-status-badge ${cls}">
+                    <span class="pulse"></span>
+                    ${getStatusLabel(svc.status)}${latencyText}
+                </span>
+            </div>
+        `;
     }
     
     const lastTime = new Date().toLocaleTimeString(currentLang === 'ar' ? 'ar-SA' : 'en-US');
