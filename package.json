@@ -1,0 +1,52 @@
+{
+  "name": "nexus-switcher",
+  "version": "1.0.0",
+  "description": "Nexus Switcher - Steam Account & Game Manager",
+  "main": "main.js",
+  "author": "DarkG",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USERNAME/REPO"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "vdf-parser": "^1.0.2"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.darkg.nexusswitcher",
+    "productName": "Nexus Switcher",
+    "copyright": "Copyright © 2025 DarkG",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.png",
+      "requestedExecutionLevel": "asInvoker",
+      "signingHashAlgorithms": [],
+      "sign": null,
+      "forceCodeSigning": false
+    },
+    "forceCodeSigning": false,
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Nexus Switcher",
+      "allowElevation": true,
+      "perMachine": false,
+      "runAfterFinish": true
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache",
+      "!dist",
+      "!.git"
+    ]
+  }
+}

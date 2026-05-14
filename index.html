@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="app.title">Nexus Switcher | مدير حسابات الألعاب</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-gamepad brand-icon"></i>
+                <h2>Nexus<span>Switcher</span></h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="accounts">
+                    <i class="fa-brands fa-steam"></i>
+                    <span data-i18n="nav.accounts">حسابات ستيم</span>
+                </a>
+                <a href="#" class="nav-item" data-target="launcher">
+                    <i class="fa-solid fa-rocket"></i>
+                    <span data-i18n="nav.launcher">اللانشر الموحد</span>
+                </a>
+                <a href="#" class="nav-item" data-target="games">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span data-i18n="nav.games">مكتبة الألعاب</span>
+                </a>
+                <a href="#" class="nav-item" data-target="performance">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span data-i18n="nav.performance">مراقبة الأداء</span>
+                </a>
+                <a href="#" class="nav-item" data-target="backup">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span data-i18n="nav.backup">النسخ الاحتياطي</span>
+                </a>
+                <a href="#" class="nav-item" data-target="settings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span data-i18n="nav.settings">الإعدادات</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status" id="steamStatusContainer">
+                    <span class="status-dot" id="steamStatusDot"></span>
+                    <span id="steamStatusText">جاري التحقق من ستيم...</span>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-muted);">
+                    <span id="appVersionDisplay">v1.0.0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-text">
+                    <h1 data-i18n="header.accounts_title">كتالوج الحسابات</h1>
+                    <p data-i18n="header.accounts_desc">إدارة وتصفح جميع حساباتك بضغطة زر</p>
+                </div>
+                <div class="header-actions">
+                    <div class="view-toggle">
+                        <button class="view-toggle-btn active" data-view="grid" data-i18n-title="header.grid_view" title="عرض شبكي">
+                            <i class="fa-solid fa-border-all"></i>
+                        </button>
+                        <button class="view-toggle-btn" data-view="list" data-i18n-title="header.list_view" title="عرض قائمة">
+                            <i class="fa-solid fa-list"></i>
+                        </button>
+                    </div>
+                    <button class="btn">
+                        <i class="fa-solid fa-rotate-right"></i> <span data-i18n="header.refresh">تحديث</span>
+                    </button>
+                    <button class="btn btn-primary" id="addAccountBtn">
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="header.add_account">إضافة حساب جديد</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Accounts View -->
+                <div id="view-accounts" class="view-section active">
+                    <div class="accounts-grid" id="accountsGrid"></div>
+                </div>
+
+                <!-- Launcher View -->
+                <div id="view-launcher" class="view-section" style="display: none;">
+                    <div class="accounts-grid">
+                        <div class="account-card">
+                            <div class="card-header">
+                                <div class="profile-pic placeholder-pic" style="background: #1b2838; color: white;">
+                                    <i class="fa-brands fa-steam"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3>Steam</h3>
+                                <p class="steam-id">Steam Platform</p>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-switch launch-platform-btn" data-platform="steam">Launch</button>
+                            </div>
+                        </div>
+                        <div class="account-card">
+                            <div class="card-header">
+                                <div class="profile-pic placeholder-pic" style="background: #313131; color: white;">
+                                    <i class="fa-solid fa-e"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3>Epic Games</h3>
+                                <p class="steam-id">Epic Platform</p>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-switch launch-platform-btn" data-platform="epic">Launch</button>
+                            </div>
+                        </div>
+                        <div class="account-card">
+                            <div class="card-header">
+                                <div class="profile-pic placeholder-pic" style="background: #00a4e4; color: white;">
+                                    <i class="fa-brands fa-battle-net"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3>Battle.net</h3>
+                                <p class="steam-id">Blizzard</p>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-switch launch-platform-btn" data-platform="battlenet">Launch</button>
+                            </div>
+                        </div>
+                        <div class="account-card">
+                            <div class="card-header">
+                                <div class="profile-pic placeholder-pic" style="background: #107c10; color: white;">
+                                    <i class="fa-brands fa-xbox"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3>Xbox</h3>
+                                <p class="steam-id">Xbox</p>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-switch launch-platform-btn" data-platform="xbox">Launch</button>
+                            </div>
+                        </div>
+                        <div class="account-card">
+                            <div class="card-header">
+                                <div class="profile-pic placeholder-pic" style="background: #ff4747; color: white;">
+                                    <strong style="font-size: 1.5rem;">EA</strong>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h3>EA App</h3>
+                                <p class="steam-id">Electronic Arts</p>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-switch launch-platform-btn" data-platform="ea">Launch</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Games View -->
+                <div id="view-games" class="view-section" style="display: none;">
+                    <div class="games-controls" style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div class="search-box" style="flex: 1; position: relative;">
+                            <i class="fa-solid fa-search" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                            <input type="text" id="gameSearchInput" data-i18n-placeholder="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
+                        </div>
+                        <select id="platformFilter" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit;">
+                            <option value="all" data-i18n="game.all_platforms">جميع المنصات</option>
+                            <option value="steam">Steam</option>
+                            <option value="epic">Epic Games</option>
+                            <option value="xbox">Xbox</option>
+                            <option value="ea">EA App</option>
+                            <option value="battlenet">Battle.net</option>
+                        </select>
+                    </div>
+                    <div class="accounts-grid" id="installedGamesGrid">
+                        <div class="info-box">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>جاري البحث عن الألعاب المثبتة...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Monitor View -->
+                <div id="view-performance" class="view-section" style="display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- CPU -->
+                        <div class="account-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div>
+                                    <h3 style="margin: 0;"><i class="fa-solid fa-microchip" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="performance.cpu">المعالج</span></h3>
+                                    <p id="perfCpuModel" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;"></p>
+                                </div>
+                                <span id="perfCpuText" style="font-size: 1.25rem; font-weight: 600;">0%</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                                <div id="perfCpuBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        <!-- RAM -->
+                        <div class="account-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h3 style="margin: 0;"><i class="fa-solid fa-memory" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="performance.ram">الذاكرة</span></h3>
+                                <span id="perfRamText" style="font-size: 1rem; font-weight: 600;">0 / 0 GB</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                                <div id="perfRamBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        <!-- GPU -->
+                        <div class="account-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div>
+                                    <h3 style="margin: 0;"><i class="fa-solid fa-display" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="performance.gpu">كرت الشاشة</span></h3>
+                                    <p id="perfGpuName" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;"></p>
+                                </div>
+                                <div style="text-align: left;">
+                                    <span id="perfGpuText" style="font-size: 1.25rem; font-weight: 600; display: block;">0%</span>
+                                    <span id="perfGpuTemp" style="font-size: 0.75rem; color: var(--text-muted);"></span>
+                                </div>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                                <div id="perfGpuBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        <!-- System info -->
+                        <div class="account-card" style="display: block;">
+                            <h3 style="margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="performance.system_info">معلومات النظام</span></h3>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                <div><span data-i18n="performance.uptime">وقت التشغيل</span>: <strong id="perfUptime" style="color: var(--text-main);">-</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup View -->
+                <div id="view-backup" class="view-section" style="display: none;">
+                    <div class="info-box" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
+                        <i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-left: 0.5rem;"></i>
+                        <span data-i18n="backup.info">النسخ الاحتياطي يحفظ جميع إعدادات حساباتك، ملاحظاتك، أوقات اللعب، والأغلفة المخصصة.</span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                        <div class="account-card" style="text-align: center; display: block;">
+                            <i class="fa-solid fa-file-export" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.75rem;"></i>
+                            <h3 data-i18n="backup.export">تصدير إلى ملف</h3>
+                            <p class="steam-id" data-i18n="backup.create_desc" style="margin-bottom: 1rem;">حفظ جميع البيانات في ملف</p>
+                            <button class="btn btn-primary" id="btnExportBackup" style="width: 100%;">
+                                <i class="fa-solid fa-download"></i> <span data-i18n="backup.export">تصدير إلى ملف</span>
+                            </button>
+                        </div>
+                        <div class="account-card" style="text-align: center; display: block;">
+                            <i class="fa-solid fa-file-import" style="font-size: 2.5rem; color: var(--success); margin-bottom: 0.75rem;"></i>
+                            <h3 data-i18n="backup.import">استيراد من ملف</h3>
+                            <p class="steam-id" data-i18n="backup.restore_desc" style="margin-bottom: 1rem;">استرجاع البيانات من ملف</p>
+                            <button class="btn" id="btnImportBackup" style="width: 100%;">
+                                <i class="fa-solid fa-upload"></i> <span data-i18n="backup.import">استيراد من ملف</span>
+                            </button>
+                        </div>
+                        <div class="account-card" style="text-align: center; display: block;">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.5rem; color: var(--accent); margin-bottom: 0.75rem;"></i>
+                            <h3 data-i18n="backup.create_backup">إنشاء نسخة احتياطية</h3>
+                            <p class="steam-id" style="margin-bottom: 1rem;">Steam config + userdata</p>
+                            <button class="btn" id="btnBackup" style="width: 100%;">
+                                <i class="fa-solid fa-copy"></i> Steam Backup
+                            </button>
+                        </div>
+                        <div class="account-card" style="text-align: center; display: block;">
+                            <i class="fa-solid fa-rotate-left" style="font-size: 2.5rem; color: var(--warning); margin-bottom: 0.75rem;"></i>
+                            <h3 data-i18n="backup.restore_backup">استعادة من نسخة</h3>
+                            <p class="steam-id" style="margin-bottom: 1rem;">Steam config + userdata</p>
+                            <button class="btn" id="btnRestore" style="width: 100%;">
+                                <i class="fa-solid fa-rotate-left"></i> Steam Restore
+                            </button>
+                        </div>
+                    </div>
+                    <div id="backupStatus" style="margin-top: 1rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="view-settings" class="view-section" style="display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Language -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4 data-i18n="settings.language">اللغة</h4>
+                                <p data-i18n="settings.language_desc">اختر لغة الواجهة</p>
+                            </div>
+                            <div class="view-toggle">
+                                <button class="view-toggle-btn" data-lang="ar"><span data-i18n="settings.arabic">العربية</span></button>
+                                <button class="view-toggle-btn" data-lang="en"><span data-i18n="settings.english">English</span></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Theme color -->
+                        <div class="setting-row" style="flex-direction: column; align-items: stretch; gap: 0.75rem;">
+                            <div class="setting-info">
+                                <h4 data-i18n="settings.theme_color">لون الواجهة</h4>
+                                <p data-i18n="settings.theme_desc">اختر لون الإضاءة المفضل</p>
+                            </div>
+                            <div class="theme-colors" style="display: flex; gap: 0.5rem;">
+                                <button class="color-btn" data-color="#60cdff" style="width: 28px; height: 28px; border-radius: 50%; background: #60cdff; border: 2px solid white; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#6ccb5f" style="width: 28px; height: 28px; border-radius: 50%; background: #6ccb5f; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#ff99a4" style="width: 28px; height: 28px; border-radius: 50%; background: #ff99a4; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#b794f6" style="width: 28px; height: 28px; border-radius: 50%; background: #b794f6; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#fce100" style="width: 28px; height: 28px; border-radius: 50%; background: #fce100; border: 2px solid transparent; cursor: pointer;"></button>
+                            </div>
+                        </div>
+
+                        <!-- Booster -->
+                        <div class="account-card booster-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fa-solid fa-rocket" style="color: var(--primary);"></i>
+                                        <span data-i18n="settings.booster">وضع تعزيز الأداء</span>
+                                    </h3>
+                                    <p class="steam-id" style="margin-top: 0.25rem;" data-i18n="settings.booster_desc">تنظيف الذاكرة وإغلاق البرامج الثقيلة عند تشغيل اللعبة</p>
+                                </div>
+                                <button class="btn" id="toggleGameBooster">
+                                    <i class="fa-solid fa-power-off"></i> <span data-i18n="settings.disabled">معطل</span>
+                                </button>
+                            </div>
+
+                            <div class="booster-memory-box" style="background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--border);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-memory" style="margin-left: 0.4rem;"></i> RAM</span>
+                                    <span id="memoryUsageText" style="font-size: 0.8rem; font-weight: 600;">-</span>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                    <div id="memoryBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.6s ease;"></div>
+                                </div>
+                            </div>
+
+                            <div id="boostStats" style="display: none; background: rgba(108,203,95,0.1); border: 1px solid rgba(108,203,95,0.3); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; text-align: center; font-size: 0.85rem;">
+                                <i class="fa-solid fa-circle-check" style="color: var(--success); margin-left: 0.4rem;"></i>
+                                <span id="boostStatsText" style="color: var(--success); font-weight: 600;"></span>
+                            </div>
+
+                            <div id="boosterSection" style="display: none;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-list-check" style="margin-left: 0.3rem;"></i> العمليات المستهدفة:</p>
+                                    <button class="btn" id="manualBoostBtn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-bolt"></i> <span data-i18n="settings.manual_boost">تعزيز يدوي الآن</span>
+                                    </button>
+                                </div>
+                                <div id="boosterProcessList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Auto-start -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4 data-i18n="settings.auto_start">التشغيل التلقائي</h4>
+                                <p data-i18n="settings.auto_start_desc">تشغيل البرنامج تلقائياً عند بدء ويندوز</p>
+                            </div>
+                            <button class="btn" id="toggleAutoStart">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                            </button>
+                        </div>
+
+                        <!-- Encryption -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4><i class="fa-solid fa-lock" style="margin-left: 0.4rem; color: var(--primary);"></i> <span data-i18n="settings.encryption">تشفير البيانات</span></h4>
+                                <p data-i18n="settings.encryption_desc">تشفير ملفات الحسابات والملاحظات تلقائياً</p>
+                            </div>
+                            <button class="btn" id="toggleEncryption">
+                                <i class="fa-solid fa-toggle-off"></i> <span data-i18n="settings.disabled">معطل</span>
+                            </button>
+                        </div>
+
+                        <!-- Update checker -->
+                        <div class="account-card" style="display: block;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3><i class="fa-solid fa-arrows-rotate" style="margin-left: 0.4rem; color: var(--primary);"></i> <span data-i18n="settings.check_updates">البحث عن تحديثات</span></h3>
+                                    <p class="steam-id" data-i18n="settings.check_updates_desc">تحقق من توفر إصدار جديد من البرنامج</p>
+                                </div>
+                                <button class="btn btn-primary" id="checkUpdateBtn">
+                                    <i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="settings.check_updates">البحث عن تحديثات</span>
+                                </button>
+                            </div>
+                            <div id="updateStatus" style="margin-top: 0.75rem;"></div>
+                        </div>
+
+                        <!-- About -->
+                        <div class="setting-row">
+                            <div class="setting-info">
+                                <h4 data-i18n="settings.about">حول البرنامج</h4>
+                                <p data-i18n="settings.about_desc">أداة متقدمة لإدارة حسابات الألعاب ومكتبة المنصات</p>
+                            </div>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;" id="appVersionDisplay2">v1.0.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal-overlay" id="addAccountModal">
+        <div class="modal">
+            <h2 data-i18n="header.add_account">إضافة حساب جديد</h2>
+            <div class="form-group">
+                <label>Steam Username</label>
+                <input type="text" placeholder="username">
+            </div>
+            <div class="form-group">
+                <label>Display Name (optional)</label>
+                <input type="text" placeholder="Display name">
+            </div>
+            <div class="modal-actions">
+                <button class="btn close-modal" data-i18n="modal.close">إلغاء</button>
+                <button class="btn btn-primary" data-i18n="modal.save">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Input for Custom Covers -->
+    <input type="file" id="coverUploadInput" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;">
+
+    <script src="app.js"></script>
+</body>
+</html>
