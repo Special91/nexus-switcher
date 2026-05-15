@@ -156,6 +156,20 @@
     "refresh": "تحديث",
     "last_checked": "آخر فحص"
   },
+  "vram": {
+    "title": "تخفيف VRAM",
+    "desc": "تنظيف ذاكرة كرت الشاشة وذواكر التخزين المؤقت",
+    "clear_cache": "تنظيف Shader Cache",
+    "restart_driver": "إعادة تشغيل GPU",
+    "clearing": "جاري التنظيف...",
+    "restarting": "جاري إعادة التشغيل...",
+    "cleared": "تم التنظيف",
+    "freed": "تم تحرير",
+    "driver_restarted": "تم إعادة تشغيل GPU Driver",
+    "confirm_cache": "سيتم حذف ملفات Shader Cache. الألعاب قد تكون أبطأ في التحميل لأول مرة بعد التنظيف. متابعة؟",
+    "confirm_driver": "سيتم إعادة تشغيل GPU Driver. ستظهر الشاشة سوداء لثانية واحدة (طبيعي تماماً). متابعة؟",
+    "no_files": "لا توجد ملفات كاش للتنظيف"
+  },
   "gameinfo": {
     "title": "معلومات اللعبة",
     "size_on_disk": "الحجم على القرص",

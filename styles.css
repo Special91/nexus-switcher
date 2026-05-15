@@ -953,10 +953,11 @@ body::before {
 
 /* ===== Steam Server Status Widget ===== */
 .steam-status-widget {
-    background: var(--bg-card);
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 1rem;
+    height: 100%;
 }
 
 .steam-status-widget h3 {

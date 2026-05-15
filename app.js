@@ -90,25 +90,26 @@ function setLanguage(lang) {
 function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        const txt = t(key);
-        // Preserve any leading <i> icon
-        const iconEl = el.querySelector('i');
-        if (iconEl && el.childNodes.length > 1) {
-            // Find text nodes and update
-            for (const node of el.childNodes) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    node.textContent = ' ' + txt + ' ';
-                    return;
-                }
+        // Handle input placeholders
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            if (!el.hasAttribute('data-i18n-placeholder')) {
+                el.innerText = t(key); // some cases
             }
-            el.innerHTML = iconEl.outerHTML + ' ' + txt;
         } else {
-            el.textContent = txt;
+            el.innerText = t(key);
         }
     });
+
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+        const key = el.getAttribute('data-i18n-placeholder');
+        el.placeholder = t(key);
     });
+    
+    // Refresh platform filter label if it has an i18n key
+    const platformFilterLabel = document.getElementById('platformFilterLabel');
+    if (platformFilterLabel && platformFilterLabel.hasAttribute('data-i18n')) {
+        platformFilterLabel.innerText = t(platformFilterLabel.getAttribute('data-i18n'));
+    }
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
@@ -697,11 +698,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         gameCards.forEach(card => {
             const btn = card.querySelector('.launch-game-btn');
             if (!btn) return;
-            const gamePlatform = btn.getAttribute('data-platform');
-            const gameName = card.querySelector('h3').innerText.toLowerCase();
             
-            const matchName = gameName.includes(query);
-            const matchPlatform = platform === 'all' || gamePlatform === platform;
+            const matchName = card.innerText.toLowerCase().includes(query);
+            const cardPlatform = btn.getAttribute('data-platform');
+            const matchPlatform = platform === 'all' || cardPlatform === platform;
             
             if (matchName && matchPlatform) {
                 card.style.display = 'block';
@@ -1940,7 +1940,117 @@ window.addEventListener('DOMContentLoaded', () => {
         const verEl2 = document.getElementById('appVersionDisplay2');
         if (verEl2) verEl2.innerText = `v${v}`;
     });
+    
+    // VRAM Optimizer
+    initVramOptimizer();
 });
+
+// ===========================================
+// ===== VRAM Optimizer =====
+// ===========================================
+let vramPollInterval = null;
+
+async function updateVramUsage() {
+    const textEl = document.getElementById('vramUsageText');
+    const barEl = document.getElementById('vramBar');
+    if (!textEl || !barEl) return;
+    
+    try {
+        const gpu = await ipcRenderer.invoke('get-gpu-stats');
+        if (gpu.available && gpu.memTotal > 0) {
+            const used = gpu.memUsed || 0;
+            const total = gpu.memTotal;
+            const percent = Math.round((used / total) * 100);
+            textEl.innerText = `${used} / ${total} MB (${percent}%)`;
+            barEl.style.width = `${percent}%`;
+            // Color based on usage
+            if (percent > 85) barEl.style.background = 'var(--danger)';
+            else if (percent > 70) barEl.style.background = 'var(--warning)';
+            else barEl.style.background = 'var(--primary)';
+        } else {
+            textEl.innerText = currentLang === 'ar' ? 'غير متاح' : 'Unavailable';
+            barEl.style.width = '0%';
+        }
+    } catch (e) {
+        textEl.innerText = '-';
+    }
+}
+
+function initVramOptimizer() {
+    const clearBtn = document.getElementById('clearShaderCacheBtn');
+    const restartBtn = document.getElementById('restartGpuDriverBtn');
+    const freedStats = document.getElementById('vramFreedStats');
+    const freedText = document.getElementById('vramFreedText');
+    
+    // Update VRAM usage every 5s when settings view is active
+    updateVramUsage();
+    if (vramPollInterval) clearInterval(vramPollInterval);
+    vramPollInterval = setInterval(updateVramUsage, 5000);
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async () => {
+            if (!confirm(t('vram.confirm_cache'))) return;
+            
+            const orig = clearBtn.innerHTML;
+            clearBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${t('vram.clearing')}</span>`;
+            clearBtn.disabled = true;
+            
+            try {
+                const result = await ipcRenderer.invoke('clear-shader-cache');
+                if (result.success) {
+                    const mb = parseFloat(result.freedMB);
+                    if (mb > 0 && freedStats && freedText) {
+                        freedText.innerText = `${t('vram.freed')} ${result.freedMB} MB (${result.cleanedCount} ${currentLang === 'ar' ? 'مجلد' : 'folders'})`;
+                        freedStats.style.display = 'block';
+                        setTimeout(() => { freedStats.style.display = 'none'; }, 8000);
+                    }
+                    showToast({
+                        type: mb > 0 ? 'success' : 'info',
+                        title: t('vram.cleared'),
+                        message: mb > 0 ? `${t('vram.freed')} ${result.freedMB} MB` : t('vram.no_files')
+                    });
+                    updateVramUsage();
+                } else {
+                    showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
+                }
+            } catch (e) {
+                showToast({ type: 'error', title: t('common.error'), message: e.message });
+            } finally {
+                clearBtn.innerHTML = orig;
+                clearBtn.disabled = false;
+            }
+        });
+    }
+    
+    if (restartBtn) {
+        restartBtn.addEventListener('click', async () => {
+            if (!confirm(t('vram.confirm_driver'))) return;
+            
+            const orig = restartBtn.innerHTML;
+            restartBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${t('vram.restarting')}</span>`;
+            restartBtn.disabled = true;
+            
+            try {
+                const result = await ipcRenderer.invoke('restart-gpu-driver');
+                if (result.success) {
+                    showToast({
+                        type: 'success',
+                        title: t('vram.driver_restarted'),
+                        message: currentLang === 'ar' ? 'تم تفريغ VRAM' : 'VRAM cleared'
+                    });
+                    setTimeout(updateVramUsage, 2000);
+                } else {
+                    showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
+                }
+            } catch (e) {
+                showToast({ type: 'error', title: t('common.error'), message: e.message });
+            } finally {
+                restartBtn.innerHTML = orig;
+                restartBtn.disabled = false;
+            }
+        });
+    }
+}
 
 function updateToggleButton(btn, isEnabled) {
     if (isEnabled) {

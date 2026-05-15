@@ -156,6 +156,20 @@
     "refresh": "Refresh",
     "last_checked": "Last checked"
   },
+  "vram": {
+    "title": "VRAM Optimizer",
+    "desc": "Clean GPU memory caches and free up VRAM",
+    "clear_cache": "Clear Shader Cache",
+    "restart_driver": "Restart GPU",
+    "clearing": "Clearing...",
+    "restarting": "Restarting...",
+    "cleared": "Cache cleared",
+    "freed": "Freed",
+    "driver_restarted": "GPU Driver restarted",
+    "confirm_cache": "Shader Cache files will be deleted. Games may load slower the first time after cleaning. Continue?",
+    "confirm_driver": "GPU Driver will restart. The screen will go black for one second (this is normal). Continue?",
+    "no_files": "No cache files to clean"
+  },
   "gameinfo": {
     "title": "Game Info",
     "size_on_disk": "Size on Disk",

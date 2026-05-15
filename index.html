@@ -170,13 +170,13 @@
                             <i class="fa-solid fa-search" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
                             <input type="text" id="gameSearchInput" data-i18n-placeholder="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
                         </div>
-                        <select id="platformFilter" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit;">
-                            <option value="all" data-i18n="game.all_platforms">جميع المنصات</option>
-                            <option value="steam">Steam</option>
-                            <option value="epic">Epic Games</option>
-                            <option value="xbox">Xbox</option>
-                            <option value="ea">EA App</option>
-                            <option value="battlenet">Battle.net</option>
+                        <select id="platformFilter" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5H7z%22/></svg>'); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 16px; padding-left: 2.25rem;">
+                            <option value="all" data-i18n="game.all_platforms" style="background: #1a1a1a; color: white;">جميع المنصات</option>
+                            <option value="steam" style="background: #1a1a1a; color: white;">Steam</option>
+                            <option value="epic" style="background: #1a1a1a; color: white;">Epic Games</option>
+                            <option value="xbox" style="background: #1a1a1a; color: white;">Xbox</option>
+                            <option value="ea" style="background: #1a1a1a; color: white;">EA App</option>
+                            <option value="battlenet" style="background: #1a1a1a; color: white;">Battle.net</option>
                         </select>
                     </div>
                     <div class="accounts-grid" id="installedGamesGrid">
@@ -204,13 +204,46 @@
                             </div>
                         </div>
                         <!-- RAM -->
-                        <div class="account-card" style="display: block;">
+                        <div class="account-card booster-card" style="display: block;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <h3 style="margin: 0;"><i class="fa-solid fa-memory" style="color: var(--primary); margin-left: 0.5rem;"></i> <span data-i18n="performance.ram">الذاكرة</span></h3>
                                 <span id="perfRamText" style="font-size: 1rem; font-weight: 600;">0 / 0 GB</span>
                             </div>
-                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
                                 <div id="perfRamBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease, background 0.3s ease;"></div>
+                            </div>
+                            <!-- Virtual memoryBar logic kept for Game Booster, mapped to the same visual as perfRamBar -->
+                            <div id="memoryUsageText" style="display: none;"></div>
+                            <div id="memoryBar" style="display: none;"></div>
+
+                            <div style="border-top: 1px solid var(--border); margin: 1rem 0; padding-top: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <div>
+                                        <h4 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                                            <i class="fa-solid fa-rocket" style="color: var(--primary);"></i>
+                                            <span data-i18n="settings.booster">وضع تعزيز الأداء</span>
+                                        </h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="settings.booster_desc">تنظيف الذاكرة وإغلاق البرامج الثقيلة</p>
+                                    </div>
+                                    <button class="btn" id="toggleGameBooster" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-power-off"></i> <span data-i18n="settings.disabled">معطل</span>
+                                    </button>
+                                </div>
+
+                                <div id="boostStats" style="display: none; background: rgba(108,203,95,0.1); border: 1px solid rgba(108,203,95,0.3); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; text-align: center; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-circle-check" style="color: var(--success); margin-left: 0.4rem;"></i>
+                                    <span id="boostStatsText" style="color: var(--success); font-weight: 600;"></span>
+                                </div>
+
+                                <div id="boosterSection" style="display: none;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;"><i class="fa-solid fa-list-check" style="margin-left: 0.3rem;"></i> العمليات المستهدفة:</p>
+                                        <button class="btn" id="manualBoostBtn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                                            <i class="fa-solid fa-bolt"></i> <span data-i18n="settings.manual_boost">تعزيز يدوي الآن</span>
+                                        </button>
+                                    </div>
+                                    <div id="boosterProcessList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
+                                </div>
                             </div>
                         </div>
                         <!-- GPU -->
@@ -225,8 +258,40 @@
                                     <span id="perfGpuTemp" style="font-size: 0.75rem; color: var(--text-muted);"></span>
                                 </div>
                             </div>
-                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;">
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
                                 <div id="perfGpuBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.5s ease, background 0.3s ease;"></div>
+                            </div>
+
+                            <div style="border-top: 1px solid var(--border); margin: 1rem 0; padding-top: 1rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <div>
+                                        <h4 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                                            <i class="fa-solid fa-microchip" style="color: var(--primary);"></i>
+                                            <span data-i18n="vram.title">تخفيف VRAM</span>
+                                        </h4>
+                                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="vram.desc">تنظيف ذاكرة كرت الشاشة وذواكر التخزين المؤقت</p>
+                                    </div>
+                                    <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 0.15rem;">VRAM</span>
+                                        <span id="vramUsageText" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">-</span>
+                                    </div>
+                                </div>
+                                
+                                <div id="vramBar" style="display: none;"></div>
+
+                                <div id="vramFreedStats" style="display: none; background: rgba(108,203,95,0.1); border: 1px solid rgba(108,203,95,0.3); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; text-align: center; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-circle-check" style="color: var(--success); margin-left: 0.4rem;"></i>
+                                    <span id="vramFreedText" style="color: var(--success); font-weight: 600;"></span>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <button class="btn" id="clearShaderCacheBtn" style="padding: 0.4rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-broom"></i> <span data-i18n="vram.clear_cache">تنظيف الكاش</span>
+                                    </button>
+                                    <button class="btn" id="restartGpuDriverBtn" style="padding: 0.4rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-bolt"></i> <span data-i18n="vram.restart_driver">إعادة تشغيل GPU</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <!-- System info -->
@@ -249,6 +314,7 @@
                                 <div style="text-align: center; padding: 1rem; color: var(--text-muted);" data-i18n="servers.checking">جاري الفحص...</div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -327,46 +393,6 @@
                         </div>
 
                         <!-- Booster -->
-                        <div class="account-card booster-card" style="display: block;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <div>
-                                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <i class="fa-solid fa-rocket" style="color: var(--primary);"></i>
-                                        <span data-i18n="settings.booster">وضع تعزيز الأداء</span>
-                                    </h3>
-                                    <p class="steam-id" style="margin-top: 0.25rem;" data-i18n="settings.booster_desc">تنظيف الذاكرة وإغلاق البرامج الثقيلة عند تشغيل اللعبة</p>
-                                </div>
-                                <button class="btn" id="toggleGameBooster">
-                                    <i class="fa-solid fa-power-off"></i> <span data-i18n="settings.disabled">معطل</span>
-                                </button>
-                            </div>
-
-                            <div class="booster-memory-box" style="background: rgba(0,0,0,0.2); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--border);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-memory" style="margin-left: 0.4rem;"></i> RAM</span>
-                                    <span id="memoryUsageText" style="font-size: 0.8rem; font-weight: 600;">-</span>
-                                </div>
-                                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
-                                    <div id="memoryBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.6s ease;"></div>
-                                </div>
-                            </div>
-
-                            <div id="boostStats" style="display: none; background: rgba(108,203,95,0.1); border: 1px solid rgba(108,203,95,0.3); border-radius: var(--radius-sm); padding: 0.6rem 0.85rem; margin-bottom: 0.75rem; text-align: center; font-size: 0.85rem;">
-                                <i class="fa-solid fa-circle-check" style="color: var(--success); margin-left: 0.4rem;"></i>
-                                <span id="boostStatsText" style="color: var(--success); font-weight: 600;"></span>
-                            </div>
-
-                            <div id="boosterSection" style="display: none;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                                    <p style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-list-check" style="margin-left: 0.3rem;"></i> العمليات المستهدفة:</p>
-                                    <button class="btn" id="manualBoostBtn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
-                                        <i class="fa-solid fa-bolt"></i> <span data-i18n="settings.manual_boost">تعزيز يدوي الآن</span>
-                                    </button>
-                                </div>
-                                <div id="boosterProcessList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;"></div>
-                            </div>
-                        </div>
-
                         <!-- Auto-start -->
                         <div class="setting-row">
                             <div class="setting-info">

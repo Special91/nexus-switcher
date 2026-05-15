@@ -420,3 +420,142 @@ ipcMain.handle('get-steam-status', async () => {
         return { success: false, error: e.message };
     }
 });
+
+// ===== VRAM Optimizer =====
+function getFolderSizeSync(dir) {
+    let total = 0;
+    try {
+        const items = fs.readdirSync(dir, { withFileTypes: true });
+        for (const it of items) {
+            const p = path.join(dir, it.name);
+            try {
+                if (it.isDirectory()) {
+                    total += getFolderSizeSync(p);
+                } else {
+                    total += fs.statSync(p).size;
+                }
+            } catch (e) {}
+        }
+    } catch (e) {}
+    return total;
+}
+
+function deleteFolderContents(dir) {
+    let deleted = 0;
+    try {
+        const items = fs.readdirSync(dir, { withFileTypes: true });
+        for (const it of items) {
+            const p = path.join(dir, it.name);
+            try {
+                if (it.isDirectory()) {
+                    fs.rmSync(p, { recursive: true, force: true });
+                } else {
+                    fs.unlinkSync(p);
+                }
+                deleted++;
+            } catch (e) {
+                // File in use, skip
+            }
+        }
+    } catch (e) {}
+    return deleted;
+}
+
+ipcMain.handle('clear-shader-cache', async () => {
+    const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    
+    // Candidate cache paths
+    const cachePaths = [
+        path.join(localAppData, 'NVIDIA', 'DXCache'),
+        path.join(localAppData, 'NVIDIA', 'GLCache'),
+        path.join(localAppData, 'NVIDIA', 'ComputeCache'),
+        path.join(localAppData, 'NVIDIA', 'OptixCache'),
+        path.join(localAppData, 'NVIDIA Corporation', 'NV_Cache'),
+        path.join(localAppData, 'AMD', 'DxCache'),
+        path.join(localAppData, 'AMD', 'GLCache'),
+        path.join(localAppData, 'AMD', 'DxcCache'),
+        path.join(localAppData, 'D3DSCache'),
+        path.join(localAppData, 'Microsoft', 'DirectX Shader Cache')
+    ];
+    
+    // Try to add Steam shader caches
+    try {
+        const steamPath = await new Promise((resolve) => {
+            exec('reg query HKCU\\Software\\Valve\\Steam /v SteamPath', (err, stdout) => {
+                if (err) return resolve(null);
+                const m = stdout.match(/REG_SZ\s+(.+)/);
+                resolve(m ? m[1].trim() : null);
+            });
+        });
+        if (steamPath) {
+            cachePaths.push(path.join(steamPath, 'appcache', 'shadercache'));
+            cachePaths.push(path.join(steamPath, 'steamapps', 'shadercache'));
+        }
+    } catch (e) {}
+    
+    let totalFreedBytes = 0;
+    let cleanedCount = 0;
+    const cleanedPaths = [];
+    
+    for (const p of cachePaths) {
+        if (fs.existsSync(p)) {
+            const sizeBefore = getFolderSizeSync(p);
+            if (sizeBefore > 0) {
+                deleteFolderContents(p);
+                const sizeAfter = getFolderSizeSync(p);
+                const freed = sizeBefore - sizeAfter;
+                if (freed > 0) {
+                    totalFreedBytes += freed;
+                    cleanedCount++;
+                    cleanedPaths.push({ path: p, freed });
+                }
+            }
+        }
+    }
+    
+    return {
+        success: true,
+        freedBytes: totalFreedBytes,
+        freedMB: (totalFreedBytes / (1024 * 1024)).toFixed(1),
+        cleanedCount,
+        paths: cleanedPaths
+    };
+});
+
+ipcMain.handle('restart-gpu-driver', async () => {
+    // Simulate Win + Ctrl + Shift + B (built-in Windows GPU driver reset hotkey)
+    return new Promise((resolve) => {
+        const psCommand = `
+$sig = @'
+[DllImport("user32.dll")]
+public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
+'@
+$kb = Add-Type -MemberDefinition $sig -Name KB -Namespace Win -PassThru
+$kb::keybd_event(0x5B, 0, 0, 0)
+$kb::keybd_event(0x11, 0, 0, 0)
+$kb::keybd_event(0x10, 0, 0, 0)
+$kb::keybd_event(0x42, 0, 0, 0)
+Start-Sleep -Milliseconds 80
+$kb::keybd_event(0x42, 0, 2, 0)
+$kb::keybd_event(0x10, 0, 2, 0)
+$kb::keybd_event(0x11, 0, 2, 0)
+$kb::keybd_event(0x5B, 0, 2, 0)
+`.trim();
+        
+        // Write to temp file and execute
+        const tmpFile = path.join(os.tmpdir(), `nexus-gpu-reset-${Date.now()}.ps1`);
+        try {
+            fs.writeFileSync(tmpFile, psCommand);
+            exec(`powershell -ExecutionPolicy Bypass -WindowStyle Hidden -File "${tmpFile}"`, (err) => {
+                try { fs.unlinkSync(tmpFile); } catch (e) {}
+                if (err) {
+                    resolve({ success: false, error: err.message });
+                } else {
+                    resolve({ success: true });
+                }
+            });
+        } catch (e) {
+            resolve({ success: false, error: e.message });
+        }
+    });
+});
