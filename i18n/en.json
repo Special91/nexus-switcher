@@ -7,9 +7,24 @@
     "accounts": "Steam Accounts",
     "launcher": "Unified Launcher",
     "games": "Game Library",
+    "controller": "Controller",
+    "performance": "Performance",
     "backup": "Backup",
-    "settings": "Settings",
-    "performance": "Performance Monitor"
+    "settings": "Settings"
+  },
+  "controller": {
+    "title": "Controller",
+    "waiting": "Waiting for controller to connect...",
+    "connected": "Connected",
+    "calibration": "Controller Calibration",
+    "calib_desc": "If a stick moves on its own (Stick Drift), you can calibrate it here to work perfectly in games.",
+    "deadzone": "Deadzone:",
+    "recenter_desc": "Leave sticks completely untouched then press:",
+    "recenter": "Recenter Sticks",
+    "overclock": "Controller Overclock",
+    "overclock_desc": "Disable USB Selective Suspend to reduce input lag to 1ms",
+    "enable_overclock": "Enable (1ms)",
+    "overclocked": "Enabled (1ms)"
   },
   "header": {
     "accounts_title": "Account Catalog",
@@ -18,6 +33,8 @@
     "launcher_desc": "Launch all platforms from one place",
     "games_title": "Game Library",
     "games_desc": "All your installed games on this device",
+    "controller_title": "Controller Hub",
+    "controller_desc": "Test, calibrate, and manage your gamepads",
     "backup_title": "Backup",
     "backup_desc": "Protect your data from corruption or loss",
     "settings_title": "Settings",

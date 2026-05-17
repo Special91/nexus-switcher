@@ -659,6 +659,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Multi-Platform Add Modal Logic
+    const platformSelectBtns = document.querySelectorAll('.platform-select-btn');
+    const steamAddInstructions = document.getElementById('steamAddInstructions');
+    const otherAddInstructions = document.getElementById('otherAddInstructions');
+    const otherAccountNameInput = document.getElementById('otherAccountNameInput');
+    const saveSessionBtn = document.getElementById('saveSessionBtn');
+    const okAddModalBtn = document.getElementById('okAddModalBtn');
+    let selectedAddPlatform = 'steam';
+
+    platformSelectBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            platformSelectBtns.forEach(b => {
+                b.classList.remove('active');
+                b.style.background = 'transparent';
+                b.style.borderColor = 'var(--border)';
+            });
+            btn.classList.add('active');
+            btn.style.borderColor = 'var(--primary)';
+            btn.style.background = 'rgba(96,205,255,0.1)';
+            
+            selectedAddPlatform = btn.getAttribute('data-plat');
+            
+            if (selectedAddPlatform === 'steam') {
+                steamAddInstructions.style.display = 'block';
+                otherAddInstructions.style.display = 'none';
+                saveSessionBtn.style.display = 'none';
+                okAddModalBtn.style.display = 'block';
+            } else {
+                steamAddInstructions.style.display = 'none';
+                otherAddInstructions.style.display = 'block';
+                saveSessionBtn.style.display = 'block';
+                okAddModalBtn.style.display = 'none';
+                otherAccountNameInput.value = '';
+            }
+        });
+    });
+
+    if (saveSessionBtn) {
+        saveSessionBtn.addEventListener('click', async () => {
+            const accName = otherAccountNameInput.value.trim();
+            if (!accName) {
+                showToast(currentLang === 'ar' ? 'الرجاء إدخال اسم للحساب' : 'Please enter an account name', 'warning');
+                return;
+            }
+            
+            saveSessionBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('common.loading')}`;
+            saveSessionBtn.disabled = true;
+            
+            try {
+                const res = await ipcRenderer.invoke('save-platform-session', selectedAddPlatform, accName);
+                if (res.success) {
+                    showToast(currentLang === 'ar' ? 'تم حفظ الجلسة بنجاح!' : 'Session saved successfully!', 'success');
+                    addAccountModal.classList.remove('active');
+                    loadOtherPlatformAccounts();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            } catch (e) {
+                showToast(e.message, 'error');
+            }
+            
+            saveSessionBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> حفظ الجلسة`;
+            saveSessionBtn.disabled = false;
+        });
+    }
+
     // Settings Logic
     const toggleAutoStartBtn = document.getElementById('toggleAutoStart');
     if (toggleAutoStartBtn) {
@@ -826,16 +892,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             manualBoostBtn.style.pointerEvents = 'none';
             const result = await runGameBoost();
             showBoostStats(result.freed, result.killed);
-            manualBoostBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> تعزيز يدوي الآن';
-            manualBoostBtn.style.pointerEvents = 'all';
         });
     }
 
-    // Memory monitoring (update every 5 seconds)
-    updateMemoryUI();
-    setInterval(updateMemoryUI, 5000);
-
     await loadSteamAccounts();
+    await loadOtherPlatformAccounts();
 });
 
 let isWatching = false;
@@ -1684,15 +1745,32 @@ async function updatePerformanceUI() {
     const gpuText = document.getElementById('perfGpuText');
     const gpuName = document.getElementById('perfGpuName');
     const gpuTemp = document.getElementById('perfGpuTemp');
+    const vramText = document.getElementById('vramUsageText');
+    const vramBar = document.getElementById('vramBar');
+
     if (gpu.available && gpuBar) {
         gpuBar.style.width = gpu.usage + '%';
         gpuText.innerText = gpu.usage + '%';
         gpuBar.style.background = gpu.usage > 80 ? 'var(--danger)' : gpu.usage > 60 ? 'var(--warning)' : 'var(--primary)';
         if (gpuName) gpuName.innerText = gpu.name || 'GPU';
         if (gpuTemp && gpu.temp) gpuTemp.innerText = `🌡 ${gpu.temp}°C`;
+        
+        // Update VRAM
+        if (vramText && vramBar && gpu.memTotal > 0) {
+            const used = gpu.memUsed || 0;
+            const total = gpu.memTotal;
+            const percent = Math.round((used / total) * 100);
+            vramText.innerText = `${used} / ${total} MB (${percent}%)`;
+            vramBar.style.width = `${percent}%`;
+            if (percent > 85) vramBar.style.background = 'var(--danger)';
+            else if (percent > 70) vramBar.style.background = 'var(--warning)';
+            else vramBar.style.background = 'var(--primary)';
+        }
     } else if (gpuText) {
         gpuText.innerText = t('performance.no_gpu');
         if (gpuBar) gpuBar.style.width = '0%';
+        if (vramText) vramText.innerText = currentLang === 'ar' ? 'غير متاح' : 'Unavailable';
+        if (vramBar) vramBar.style.width = '0%';
     }
     
     const uptimeEl = document.getElementById('perfUptime');
@@ -1717,50 +1795,94 @@ function stopPerformanceMonitor() {
 }
 
 // ===========================================
-// ===== Update Checker =====
+// ===== Free Games Tracker =====
 // ===========================================
-async function checkForUpdates(silent = false) {
-    const btn = document.getElementById('checkUpdateBtn');
-    const status = document.getElementById('updateStatus');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('settings.checking')}`;
+let cachedFreeGames = null;
+let lastFreeGamesCheck = 0;
+
+async function fetchFreeGames(force = false) {
+    const listEl = document.getElementById('freeGamesList');
+    if (!listEl) return;
+
+    const now = Date.now();
+    // Cache for 30 minutes to avoid hitting API limits
+    if (!force && cachedFreeGames && (now - lastFreeGamesCheck) < 1800000) {
+        renderFreeGames(cachedFreeGames);
+        return;
     }
-    if (status) status.innerHTML = '';
+
+    listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> ${t('common.loading')}</div>`;
     
-    const result = await ipcRenderer.invoke('check-updates');
-    
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> ${t('settings.check_updates')}`;
+    try {
+        const https = require('https');
+        const data = await new Promise((resolve, reject) => {
+            https.get('https://www.gamerpower.com/api/giveaways?platform=pc', (res) => {
+                if (res.statusCode !== 200) {
+                    reject(new Error(`API Error: ${res.statusCode}`));
+                    return;
+                }
+                let rawData = '';
+                res.on('data', (chunk) => rawData += chunk);
+                res.on('end', () => {
+                    try { resolve(JSON.parse(rawData)); }
+                    catch(e) { reject(e); }
+                });
+            }).on('error', reject);
+        });
+        
+        // Filter locally to get only Games from Steam, Epic, GOG
+        const filteredGames = data.filter(game => 
+            game.type === 'Game' && 
+            (game.platforms.toLowerCase().includes('steam') || 
+             game.platforms.toLowerCase().includes('epic') || 
+             game.platforms.toLowerCase().includes('gog'))
+        );
+        
+        cachedFreeGames = filteredGames.slice(0, 10); // get top 10
+        lastFreeGamesCheck = now;
+        renderFreeGames(cachedFreeGames);
+    } catch (e) {
+        console.error("Free games error:", e);
+        listEl.innerHTML = `<div style="color: var(--danger); font-size: 0.85rem;"><i class="fa-solid fa-circle-exclamation"></i> ${currentLang === 'ar' ? 'تعذر جلب الألعاب المجانية' : 'Could not fetch free games'}</div>`;
     }
+}
+
+function renderFreeGames(games) {
+    const listEl = document.getElementById('freeGamesList');
+    if (!listEl) return;
     
-    if (status) {
-        if (!result.success) {
-            status.innerHTML = `<span style="color: var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> ${t('common.error')}: ${result.error || 'unknown'}</span>`;
-        } else if (result.hasUpdate) {
-            status.innerHTML = `
-                <div style="background: rgba(96,205,255,0.1); border: 1px solid var(--primary); border-radius: var(--radius-md); padding: 0.8rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-                        <div>
-                            <strong style="color: var(--primary);"><i class="fa-solid fa-circle-up"></i> ${t('settings.update_available')}</strong>
-                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">
-                                ${t('settings.current_version')}: ${result.current} → ${t('settings.latest_version')}: ${result.latest}
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" id="downloadUpdateBtn"><i class="fa-solid fa-download"></i> ${t('settings.download_update')}</button>
-                    </div>
+    listEl.innerHTML = '';
+    
+    if (!games || games.length === 0) {
+        listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem;">${currentLang === 'ar' ? 'لا توجد عروض حالياً' : 'No giveaways available'}</div>`;
+        return;
+    }
+
+    games.forEach(game => {
+        let platIcon = 'fa-windows';
+        const p = game.platforms.toLowerCase();
+        if (p.includes('steam')) platIcon = 'fa-steam';
+        else if (p.includes('epic')) platIcon = 'fa-e';
+        else if (p.includes('gog')) platIcon = 'fa-g';
+        
+        const card = document.createElement('div');
+        card.className = 'free-game-card';
+        card.innerHTML = `
+            <img src="${game.thumbnail}" alt="${game.title}" onerror="this.src='https://via.placeholder.com/180x100/1e1e1e/888888?text=No+Image'">
+            <div class="info">
+                <div class="title" title="${game.title}">${game.title}</div>
+                <div class="platform">
+                    <span><i class="fa-brands ${platIcon}"></i> ${game.platforms.split(',')[0]}</span>
+                    <span class="badge">FREE</span>
                 </div>
-            `;
-            const dlBtn = document.getElementById('downloadUpdateBtn');
-            if (dlBtn) dlBtn.addEventListener('click', () => ipcRenderer.invoke('open-external', result.url));
-            if (!silent) showToast(`${t('toast.update_available')}: v${result.latest}`, 'info', { title: t('settings.check_updates'), duration: 6000 });
-        } else {
-            status.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${t('settings.up_to_date')} (v${result.current})</span>`;
-            if (!silent) showToast(t('toast.up_to_date'), 'success');
-        }
-    }
-    return result;
+            </div>
+        `;
+        card.addEventListener('click', () => {
+            ipcRenderer.invoke('open-external', game.open_giveaway);
+        });
+        
+        listEl.appendChild(card);
+    });
 }
 
 // ===========================================
@@ -1917,8 +2039,17 @@ window.addEventListener('DOMContentLoaded', () => {
             } else {
                 stopPerformanceMonitor();
             }
+            if (target === 'games') {
+                setTimeout(() => fetchFreeGames(), 100);
+            }
         });
     });
+    
+    // Refresh free games button
+    const refreshFreeGamesBtn = document.getElementById('refreshFreeGamesBtn');
+    if (refreshFreeGamesBtn) {
+        refreshFreeGamesBtn.addEventListener('click', () => fetchFreeGames(true));
+    }
     
     // Server status refresh button
     const refreshServerBtn = document.getElementById('refreshServerStatusBtn');
@@ -1942,50 +2073,19 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     
     // VRAM Optimizer
+    initDragScroll();
     initVramOptimizer();
 });
 
 // ===========================================
 // ===== VRAM Optimizer =====
 // ===========================================
-let vramPollInterval = null;
-
-async function updateVramUsage() {
-    const textEl = document.getElementById('vramUsageText');
-    const barEl = document.getElementById('vramBar');
-    if (!textEl || !barEl) return;
-    
-    try {
-        const gpu = await ipcRenderer.invoke('get-gpu-stats');
-        if (gpu.available && gpu.memTotal > 0) {
-            const used = gpu.memUsed || 0;
-            const total = gpu.memTotal;
-            const percent = Math.round((used / total) * 100);
-            textEl.innerText = `${used} / ${total} MB (${percent}%)`;
-            barEl.style.width = `${percent}%`;
-            // Color based on usage
-            if (percent > 85) barEl.style.background = 'var(--danger)';
-            else if (percent > 70) barEl.style.background = 'var(--warning)';
-            else barEl.style.background = 'var(--primary)';
-        } else {
-            textEl.innerText = currentLang === 'ar' ? 'غير متاح' : 'Unavailable';
-            barEl.style.width = '0%';
-        }
-    } catch (e) {
-        textEl.innerText = '-';
-    }
-}
 
 function initVramOptimizer() {
     const clearBtn = document.getElementById('clearShaderCacheBtn');
     const restartBtn = document.getElementById('restartGpuDriverBtn');
     const freedStats = document.getElementById('vramFreedStats');
     const freedText = document.getElementById('vramFreedText');
-    
-    // Update VRAM usage every 5s when settings view is active
-    updateVramUsage();
-    if (vramPollInterval) clearInterval(vramPollInterval);
-    vramPollInterval = setInterval(updateVramUsage, 5000);
     
     if (clearBtn) {
         clearBtn.addEventListener('click', async () => {
@@ -2009,7 +2109,7 @@ function initVramOptimizer() {
                         title: t('vram.cleared'),
                         message: mb > 0 ? `${t('vram.freed')} ${result.freedMB} MB` : t('vram.no_files')
                     });
-                    updateVramUsage();
+                    updatePerformanceUI(); // refresh
                 } else {
                     showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
                 }
@@ -2038,7 +2138,7 @@ function initVramOptimizer() {
                         title: t('vram.driver_restarted'),
                         message: currentLang === 'ar' ? 'تم تفريغ VRAM' : 'VRAM cleared'
                     });
-                    setTimeout(updateVramUsage, 2000);
+                    setTimeout(updatePerformanceUI, 2000); // refresh
                 } else {
                     showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
                 }

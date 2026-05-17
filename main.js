@@ -181,6 +181,73 @@ ipcMain.handle('decrypt-data', (event, base64data) => {
 
 ipcMain.handle('encryption-available', () => safeStorage.isEncryptionAvailable());
 
+ipcMain.handle('save-platform-session', async (event, platform, accountName) => {
+    try {
+        const info = PLATFORM_INFO[platform];
+        if (!info || !fs.existsSync(info.path)) throw new Error('Platform data not found or not installed.');
+        
+        // Kill process
+        await new Promise(r => exec(`taskkill /F /IM ${info.process} /T`, () => r()));
+        await new Promise(r => setTimeout(r, 1000));
+
+        const targetDir = path.join(SESSIONS_DIR, platform, accountName);
+        if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+
+        fs.cpSync(info.path, targetDir, { recursive: true, force: true });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
+ipcMain.handle('switch-platform-session', async (event, platform, accountName) => {
+    try {
+        const info = PLATFORM_INFO[platform];
+        const sourceDir = path.join(SESSIONS_DIR, platform, accountName);
+        
+        if (!info || !fs.existsSync(sourceDir)) throw new Error('Session not found.');
+
+        await new Promise(r => exec(`taskkill /F /IM ${info.process} /T`, () => r()));
+        await new Promise(r => setTimeout(r, 1000));
+
+        if (fs.existsSync(info.path)) {
+            fs.rmSync(info.path, { recursive: true, force: true });
+        }
+        fs.mkdirSync(info.path, { recursive: true });
+        fs.cpSync(sourceDir, info.path, { recursive: true, force: true });
+
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
+ipcMain.handle('get-platform-sessions', () => {
+    const sessions = {};
+    for (const plat of Object.keys(PLATFORM_INFO)) {
+        sessions[plat] = [];
+        const pDir = path.join(SESSIONS_DIR, plat);
+        if (fs.existsSync(pDir)) {
+            sessions[plat] = fs.readdirSync(pDir, { withFileTypes: true })
+                               .filter(dirent => dirent.isDirectory())
+                               .map(dirent => dirent.name);
+        }
+    }
+    return sessions;
+});
+
+ipcMain.handle('delete-platform-session', async (event, platform, accountName) => {
+    try {
+        const sourceDir = path.join(SESSIONS_DIR, platform, accountName);
+        if (fs.existsSync(sourceDir)) {
+            fs.rmSync(sourceDir, { recursive: true, force: true });
+        }
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+});
+
 // ===== System Performance Monitor =====
 let lastCpuInfo = os.cpus();
 

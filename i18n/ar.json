@@ -7,9 +7,24 @@
     "accounts": "حسابات ستيم",
     "launcher": "اللانشر الموحد",
     "games": "مكتبة الألعاب",
+    "controller": "الكنترولر",
     "backup": "النسخ الاحتياطي",
     "settings": "الإعدادات",
     "performance": "مراقبة الأداء"
+  },
+  "controller": {
+    "title": "الكنترولر",
+    "waiting": "في انتظار توصيل يد التحكم...",
+    "connected": "متصل",
+    "calibration": "معايرة الكنترولر",
+    "calib_desc": "إذا كانت إحدى العصي تتحرك من تلقاء نفسها (Stick Drift)، يمكنك معايرتها من هنا لتعمل بشكل مثالي داخل الألعاب.",
+    "deadzone": "المنطقة الميتة (Deadzone):",
+    "recenter_desc": "اترك العصي تماماً ثم اضغط الزر للتصفير:",
+    "recenter": "تصفير المركز",
+    "overclock": "كسر سرعة الاستجابة (Overclock)",
+    "overclock_desc": "إلغاء توفير الطاقة لـ USB وتقليل تأخير الاستجابة (Input Lag) لـ 1ms",
+    "enable_overclock": "تفعيل (1ms)",
+    "overclocked": "مفعل (1ms)"
   },
   "header": {
     "accounts_title": "كتالوج الحسابات",
@@ -18,6 +33,8 @@
     "launcher_desc": "تشغيل جميع المنصات من مكان واحد",
     "games_title": "مكتبة الألعاب",
     "games_desc": "جميع ألعابك المثبتة في الجهاز",
+    "controller_title": "مركز الكنترولر",
+    "controller_desc": "فحص، معايرة، وإدارة أيادي التحكم",
     "backup_title": "النسخ الاحتياطي",
     "backup_desc": "حماية بياناتك من التلف أو الفقدان",
     "settings_title": "الإعدادات",

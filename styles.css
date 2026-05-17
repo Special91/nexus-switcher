@@ -1027,6 +1027,69 @@ body::before {
     50% { opacity: 0.4; }
 }
 
+/* ===== Free Games Scroll ===== */
+#freeGamesList::-webkit-scrollbar {
+    height: 6px;
+}
+#freeGamesList::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+#freeGamesList::-webkit-scrollbar-thumb {
+    background: #107c10;
+    border-radius: 4px;
+}
+#freeGamesList::-webkit-scrollbar-thumb:hover {
+    background: #139113;
+}
+
+.free-game-card {
+    min-width: 180px;
+    max-width: 180px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.free-game-card:hover {
+    transform: translateY(-3px);
+    border-color: #107c10;
+}
+.free-game-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--border);
+}
+.free-game-card .info {
+    padding: 0.5rem;
+}
+.free-game-card .title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.free-game-card .platform {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+}
+.free-game-card .badge {
+    background: #107c10;
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 0.6rem;
+}
+
 /* ===== Game Info Modal ===== */
 .game-info-modal {
     max-width: 540px;
