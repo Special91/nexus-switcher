@@ -6,7 +6,7 @@
   "author": "DarkG",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Special91/nexus-switcher"
+    "url": "https://github.com/kd9s/nexus-switcher"
   },
   "scripts": {
     "start": "electron .",

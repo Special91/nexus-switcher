@@ -623,13 +623,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Refresh Button Logic
-    const refreshBtn = document.querySelector('.header-actions .btn-secondary');
+    const refreshBtn = document.getElementById('refreshAccountsBtn');
     if (refreshBtn) {
         refreshBtn.addEventListener('click', async () => {
             const icon = refreshBtn.querySelector('i');
             icon.classList.add('fa-spin');
-            await loadSteamAccounts();
-            setTimeout(() => icon.classList.remove('fa-spin'), 500);
+            refreshBtn.disabled = true;
+            try {
+                await loadSteamAccounts();
+                if (typeof loadOtherPlatformAccounts === 'function') {
+                    await loadOtherPlatformAccounts();
+                }
+            } catch (e) { console.error(e); }
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                refreshBtn.disabled = false;
+            }, 500);
         });
     }
 
@@ -712,7 +721,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (res.success) {
                     showToast(currentLang === 'ar' ? 'تم حفظ الجلسة بنجاح!' : 'Session saved successfully!', 'success');
                     addAccountModal.classList.remove('active');
-                    loadOtherPlatformAccounts();
+                    await loadSteamAccounts();
+                    if(typeof loadOtherPlatformAccounts === 'function') await loadOtherPlatformAccounts();
                 } else {
                     showToast(res.error, 'error');
                 }
@@ -895,6 +905,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Update Checker
+    const checkUpdateBtn = document.getElementById('checkUpdateBtn');
+    const updateStatus = document.getElementById('updateStatus');
+    if (checkUpdateBtn) {
+        checkUpdateBtn.addEventListener('click', async () => {
+            const btnText = typeof t === 'function' ? t('settings.check_updates') : 'البحث عن تحديثات';
+            checkUpdateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + btnText;
+            checkUpdateBtn.disabled = true;
+            if (updateStatus) updateStatus.innerHTML = '';
+
+            try {
+                const res = await ipcRenderer.invoke('check-updates');
+                const isAr = typeof currentLang !== 'undefined' ? currentLang === 'ar' : true;
+                
+                if (res.success) {
+                    if (res.hasUpdate) {
+                        updateStatus.innerHTML = `
+                            <div style="padding: 0.75rem; background: rgba(108, 203, 95, 0.1); border: 1px solid rgba(108, 203, 95, 0.3); border-radius: var(--radius-sm);">
+                                <strong style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> ${isAr ? 'يتوفر تحديث جديد!' : 'Update Available!'} (v${res.latest})</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">${isAr ? 'الإصدار الحالي:' : 'Current Version:'} v${res.current}</p>
+                                <button class="btn btn-primary" id="downloadUpdateBtn" data-url="${res.url}" style="margin-top: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-download"></i> ${isAr ? 'تحميل التحديث' : 'Download Update'}
+                                </button>
+                            </div>
+                        `;
+                        const downloadBtn = document.getElementById('downloadUpdateBtn');
+                        if (downloadBtn) {
+                            downloadBtn.addEventListener('click', () => {
+                                ipcRenderer.invoke('open-external', downloadBtn.getAttribute('data-url'));
+                            });
+                        }
+                    } else {
+                        updateStatus.innerHTML = `
+                            <div style="padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                                <strong><i class="fa-solid fa-check" style="color: var(--text-muted);"></i> ${isAr ? 'أنت تستخدم أحدث إصدار' : 'You are using the latest version'}</strong>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">v${res.current}</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    updateStatus.innerHTML = `
+                        <div style="padding: 0.75rem; background: rgba(255, 71, 71, 0.1); border: 1px solid rgba(255, 71, 71, 0.3); border-radius: var(--radius-sm);">
+                            <strong style="color: var(--danger);"><i class="fa-solid fa-circle-exclamation"></i> ${isAr ? 'حدث خطأ أثناء البحث عن تحديثات' : 'Error checking for updates'}</strong>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                const isAr = typeof currentLang !== 'undefined' ? currentLang === 'ar' : true;
+                if (updateStatus) updateStatus.innerHTML = `<span style="color: var(--danger);">${isAr ? 'خطأ في الاتصال' : 'Connection error'}</span>`;
+            }
+
+            checkUpdateBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="settings.check_updates">' + btnText + '</span>';
+            checkUpdateBtn.disabled = false;
+        });
+    }
+
+
     await loadSteamAccounts();
     await loadOtherPlatformAccounts();
 });
@@ -916,8 +983,9 @@ async function loadSteamAccounts() {
         let fsTimeout;
         fs.watch(vdfPath, (eventType) => {
             if (!fsTimeout) {
-                fsTimeout = setTimeout(() => {
-                    loadSteamAccounts();
+                fsTimeout = setTimeout(async () => {
+                    await loadSteamAccounts();
+                    if(typeof loadOtherPlatformAccounts === 'function') await loadOtherPlatformAccounts();
                     fsTimeout = null;
                 }, 1000);
             }
@@ -2020,11 +2088,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Update checker button
-    const checkUpdateBtn = document.getElementById('checkUpdateBtn');
-    if (checkUpdateBtn) {
-        checkUpdateBtn.addEventListener('click', () => checkForUpdates(false));
-    }
+
     
     // Performance monitor nav: start when shown, stop when hidden
     const navItems = document.querySelectorAll('.nav-item');
@@ -2073,7 +2137,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     
     // VRAM Optimizer
-    initDragScroll();
     initVramOptimizer();
 });
 
@@ -2104,17 +2167,17 @@ function initVramOptimizer() {
                         freedStats.style.display = 'block';
                         setTimeout(() => { freedStats.style.display = 'none'; }, 8000);
                     }
-                    showToast({
-                        type: mb > 0 ? 'success' : 'info',
-                        title: t('vram.cleared'),
-                        message: mb > 0 ? `${t('vram.freed')} ${result.freedMB} MB` : t('vram.no_files')
-                    });
+                    showToast(
+                        mb > 0 ? `${t('vram.freed')} ${result.freedMB} MB` : t('vram.no_files'),
+                        mb > 0 ? 'success' : 'info',
+                        { title: t('vram.cleared') }
+                    );
                     updatePerformanceUI(); // refresh
                 } else {
-                    showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
+                    showToast(result.error || 'unknown', 'error', { title: t('common.error') });
                 }
             } catch (e) {
-                showToast({ type: 'error', title: t('common.error'), message: e.message });
+                showToast(e.message, 'error', { title: t('common.error') });
             } finally {
                 clearBtn.innerHTML = orig;
                 clearBtn.disabled = false;
@@ -2133,17 +2196,17 @@ function initVramOptimizer() {
             try {
                 const result = await ipcRenderer.invoke('restart-gpu-driver');
                 if (result.success) {
-                    showToast({
-                        type: 'success',
-                        title: t('vram.driver_restarted'),
-                        message: currentLang === 'ar' ? 'تم تفريغ VRAM' : 'VRAM cleared'
-                    });
+                    showToast(
+                        currentLang === 'ar' ? 'تم تفريغ VRAM' : 'VRAM cleared',
+                        'success',
+                        { title: t('vram.driver_restarted') }
+                    );
                     setTimeout(updatePerformanceUI, 2000); // refresh
                 } else {
-                    showToast({ type: 'error', title: t('common.error'), message: result.error || 'unknown' });
+                    showToast(result.error || 'unknown', 'error', { title: t('common.error') });
                 }
             } catch (e) {
-                showToast({ type: 'error', title: t('common.error'), message: e.message });
+                showToast(e.message, 'error', { title: t('common.error') });
             } finally {
                 restartBtn.innerHTML = orig;
                 restartBtn.disabled = false;
@@ -2408,3 +2471,138 @@ function openGameInfoModal(gameId, gameName, platform = 'steam', bannerUrl = nul
 }
 
 window.openGameInfoModal = openGameInfoModal;
+
+async function loadOtherPlatformAccounts() {
+    try {
+        const sessions = await ipcRenderer.invoke('get-platform-sessions');
+        const grid = document.getElementById('accountsGrid');
+        if (!grid) return;
+
+        const platformDetails = {
+            epic: { name: 'Epic Games', icon: 'fa-solid fa-e', color: '#313131' },
+            riot: { name: 'Riot Games', icon: 'fa-solid fa-r', color: '#eb0029' },
+            ea: { name: 'EA App', icon: 'fa-solid fa-gamepad', color: '#ff4747' },
+            ubisoft: { name: 'Ubisoft', icon: 'fa-solid fa-u', color: '#0070ff' },
+            battlenet: { name: 'Battle.net', icon: 'fa-brands fa-battle-net', color: '#00a4e4' }
+        };
+
+        for (const [platform, accounts] of Object.entries(sessions)) {
+            if (!accounts || accounts.length === 0) continue;
+            
+            const info = platformDetails[platform] || { name: platform, icon: 'fa-solid fa-gamepad', color: '#555' };
+            
+            accounts.forEach(accName => {
+                const card = document.createElement('div');
+                card.className = `account-card`;
+                card.innerHTML = `
+                    <div class="card-glow"></div>
+                    <div class="card-header">
+                        <div class="profile-pic placeholder-pic" style="background: ${info.color}; color: white; padding: 0;">
+                            <i class="${info.icon}" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h3>${accName}</h3>
+                        <p class="steam-id">${info.name}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-switch switch-other-btn" data-platform="${platform}" data-account="${accName}">
+                            <i class="fa-solid fa-bolt"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'تبديل' : 'Switch'}
+                        </button>
+                        <button class="btn-icon dropdown-toggle-other" data-platform="${platform}" data-account="${accName}">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.querySelectorAll('.switch-other-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const platform = this.getAttribute('data-platform');
+                const accName = this.getAttribute('data-account');
+                const isAr = typeof currentLang !== 'undefined' && currentLang === 'ar';
+                
+                this.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>...';
+                this.style.pointerEvents = 'none';
+                
+                const res = await ipcRenderer.invoke('switch-platform-session', platform, accName);
+                if (res.success) {
+                    showToast(isAr ? 'تم التبديل بنجاح! جاري تشغيل المنصة...' : 'Switched successfully! Launching...', 'success');
+                    if (platform === 'epic') {
+                        exec('start com.epicgames.launcher://');
+                    } else if (platform === 'ea') {
+                        const eaPath = 'C:\\Program Files\\Electronic Arts\\EA Desktop\\EA Desktop\\EADesktop.exe';
+                        if (fs.existsSync(eaPath)) {
+                            exec(`start "" "${eaPath}"`);
+                        } else {
+                            exec('start origin2://');
+                        }
+                    } else if (platform === 'riot') {
+                        const riotPath = 'C:\\Riot Games\\Riot Client\\RiotClientServices.exe';
+                        if (fs.existsSync(riotPath)) {
+                            exec(`start "" "${riotPath}"`);
+                        } else {
+                            exec('start riotclient://');
+                        }
+                    } else if (platform === 'ubisoft') {
+                        exec('start uplay://');
+                    } else if (platform === 'battlenet') {
+                        exec('start battlenet://');
+                    }
+                } else {
+                    showToast(res.error, 'error');
+                }
+                
+                this.innerHTML = `<i class="fa-solid fa-bolt"></i> ${isAr ? 'تبديل' : 'Switch'}`;
+                this.style.pointerEvents = 'auto';
+            });
+        });
+
+        document.querySelectorAll('.dropdown-toggle-other').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const existing = document.querySelector('.dropdown-popup');
+                if (existing) { existing.remove(); return; }
+                
+                const platform = btn.getAttribute('data-platform');
+                const accName = btn.getAttribute('data-account');
+                const btnRect = btn.getBoundingClientRect();
+                
+                const popup = document.createElement('div');
+                popup.className = 'dropdown-popup';
+                popup.style.cssText = `position: fixed; top: ${btnRect.top - 6}px; left: ${btnRect.left}px; transform: translateY(-100%); background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 170px; direction: rtl;`;
+                popup.innerHTML = `
+                    <button class="btn delete-other-btn" data-platform="${platform}" data-account="${accName}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--danger); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
+                        <i class="fa-solid fa-trash"></i> إزالة الحساب
+                    </button>
+                `;
+                document.body.appendChild(popup);
+                
+                requestAnimationFrame(() => {
+                    const popupRect = popup.getBoundingClientRect();
+                    if (popupRect.top < 0) {
+                        popup.style.top = `${btnRect.bottom + 6}px`;
+                        popup.style.transform = 'none';
+                    }
+                });
+                
+                popup.querySelector('.delete-other-btn').addEventListener('click', async () => {
+                    if (confirm('هل أنت متأكد من رغبتك في إزالة هذا الحساب؟')) {
+                        popup.remove();
+                        await ipcRenderer.invoke('delete-platform-session', platform, accName);
+                        const icon = document.querySelector('.header-actions #refreshAccountsBtn i');
+                        if (icon) icon.classList.add('fa-spin');
+                        await loadSteamAccounts();
+                        await loadOtherPlatformAccounts();
+                        if (icon) setTimeout(() => icon.classList.remove('fa-spin'), 500);
+                    }
+                });
+            });
+        });
+
+    } catch (e) {
+        console.error('Error loading other platform accounts:', e);
+    }
+}

@@ -6,11 +6,20 @@ const https = require('https');
 const { exec } = require('child_process');
 
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
-app.commandLine.appendSwitch('disk-cache-dir', path.join(require('os').tmpdir(), 'nexus-switcher-cache'));
+// Removed explicit disk-cache-dir to prevent access denied errors
 
 let mainWindow;
 let tray = null;
 let isQuitting = false;
+
+const SESSIONS_DIR = path.join(app.getPath('userData'), 'PlatformSessions');
+const PLATFORM_INFO = {
+    epic: { process: 'EpicGamesLauncher.exe', path: path.join(os.homedir(), 'AppData', 'Local', 'EpicGamesLauncher', 'Saved') },
+    riot: { process: 'RiotClientServices.exe', path: path.join(os.homedir(), 'AppData', 'Local', 'Riot Games', 'Riot Client', 'Data') },
+    ea: { process: 'EADesktop.exe', path: path.join(os.homedir(), 'AppData', 'Local', 'Electronic Arts', 'EA Desktop') },
+    ubisoft: { process: 'upc.exe', path: path.join(os.homedir(), 'AppData', 'Local', 'Ubisoft Game Launcher') },
+    battlenet: { process: 'Battle.net.exe', path: path.join(os.homedir(), 'AppData', 'Roaming', 'Battle.net') }
+};
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -181,14 +190,28 @@ ipcMain.handle('decrypt-data', (event, base64data) => {
 
 ipcMain.handle('encryption-available', () => safeStorage.isEncryptionAvailable());
 
+async function killPlatformProcesses(platform) {
+    const processes = {
+        ea: ['EADesktop.exe', 'EABackgroundService.exe', 'Link2EA.exe'],
+        epic: ['EpicGamesLauncher.exe', 'EpicWebHelper.exe'],
+        riot: ['RiotClientServices.exe'],
+        ubisoft: ['upc.exe'],
+        battlenet: ['Battle.net.exe', 'Agent.exe']
+    };
+    const list = processes[platform] || [];
+    for (const proc of list) {
+        await new Promise(r => exec(`taskkill /F /IM ${proc} /T`, () => r()));
+    }
+    await new Promise(r => setTimeout(r, 1000));
+}
+
 ipcMain.handle('save-platform-session', async (event, platform, accountName) => {
     try {
         const info = PLATFORM_INFO[platform];
         if (!info || !fs.existsSync(info.path)) throw new Error('Platform data not found or not installed.');
         
-        // Kill process
-        await new Promise(r => exec(`taskkill /F /IM ${info.process} /T`, () => r()));
-        await new Promise(r => setTimeout(r, 1000));
+        // Kill processes holding locks
+        await killPlatformProcesses(platform);
 
         const targetDir = path.join(SESSIONS_DIR, platform, accountName);
         if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
@@ -207,8 +230,8 @@ ipcMain.handle('switch-platform-session', async (event, platform, accountName) =
         
         if (!info || !fs.existsSync(sourceDir)) throw new Error('Session not found.');
 
-        await new Promise(r => exec(`taskkill /F /IM ${info.process} /T`, () => r()));
-        await new Promise(r => setTimeout(r, 1000));
+        // Kill processes holding locks
+        await killPlatformProcesses(platform);
 
         if (fs.existsSync(info.path)) {
             fs.rmSync(info.path, { recursive: true, force: true });
