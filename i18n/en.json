@@ -7,24 +7,9 @@
     "accounts": "Steam Accounts",
     "launcher": "Unified Launcher",
     "games": "Game Library",
-    "controller": "Controller",
     "performance": "Performance",
     "backup": "Backup",
     "settings": "Settings"
-  },
-  "controller": {
-    "title": "Controller",
-    "waiting": "Waiting for controller to connect...",
-    "connected": "Connected",
-    "calibration": "Controller Calibration",
-    "calib_desc": "If a stick moves on its own (Stick Drift), you can calibrate it here to work perfectly in games.",
-    "deadzone": "Deadzone:",
-    "recenter_desc": "Leave sticks completely untouched then press:",
-    "recenter": "Recenter Sticks",
-    "overclock": "Controller Overclock",
-    "overclock_desc": "Disable USB Selective Suspend to reduce input lag to 1ms",
-    "enable_overclock": "Enable (1ms)",
-    "overclocked": "Enabled (1ms)"
   },
   "header": {
     "accounts_title": "Account Catalog",
@@ -33,8 +18,6 @@
     "launcher_desc": "Launch all platforms from one place",
     "games_title": "Game Library",
     "games_desc": "All your installed games on this device",
-    "controller_title": "Controller Hub",
-    "controller_desc": "Test, calibrate, and manage your gamepads",
     "backup_title": "Backup",
     "backup_desc": "Protect your data from corruption or loss",
     "settings_title": "Settings",
@@ -48,6 +31,8 @@
   },
   "account": {
     "current": "Current Account",
+    "logged_in": "Signed in",
+    "login": "Sign in",
     "active_now": "Active Now",
     "switch": "Switch Account",
     "switching": "Switching...",
@@ -60,9 +45,46 @@
     "games_owned": "games",
     "wallet_balance": "Balance",
     "no_balance": "Unavailable",
-    "save_notes": "Save"
+    "save_notes": "Save",
+    "other_accounts": "Other accounts",
+    "all_accounts": "All accounts",
+    "choose_account": "Choose an account to sign in",
+    "open_profile": "Open profile",
+    "login_hint": "Tap to sign in with this account"
+    ,
+    "rename": "Rename",
+    "rename_prompt": "Type a new name for this account:",
+    "rename_exists": "This name already exists"
+  },
+  "launcher": {
+    "launch": "Launch platform",
+    "launching": "Launching..."
+  },
+  "platform": {
+    "no_session_title": "No active account",
+    "no_session_desc": "Pick an account below and press «Sign in», or open the launcher, log in, then save the session.",
+    "open_launcher": "Open launcher",
+    "launcher_running": "Launcher running",
+    "launcher_stopped": "Launcher stopped",
+    "epic_switch_hint": "Switched. Wait 15–30 seconds. If login appears, re-save the session after signing in in Epic.",
+    "epic_save_hint": "For Epic: sign in in the launcher, then save session (Config + Registry, TcNo-style). Re-save each account after this update.",
+    "save_session_btn": "Save new session"
+  },
+  "steam": {
+    "path_not_found": "Could not find Steam installation path.",
+    "no_accounts": "No accounts are currently registered in Steam.",
+    "no_session_title": "No active account",
+    "no_session_desc": "Pick an account below and press «Sign in» to open Steam and log in.",
+    "session_active_title": "You are signed in",
+    "session_active_desc": "Other accounts can be switched to with one click.",
+    "open_steam_login": "Open Steam to sign in",
+    "steam_online": "Steam is running",
+    "steam_offline": "Steam is offline",
+    "offline_pick_account": "Steam is closed — {n} saved account(s). Pick one below or scroll to Epic to switch.",
+    "show_accounts": "Show accounts"
   },
   "game": {
+    "free_games": "Free Games & Deals",
     "launch": "Launch",
     "launching": "Loading...",
     "boosting": "Boosting...",
@@ -92,7 +114,14 @@
     "restoring": "Restoring...",
     "success": "Operation successful",
     "error": "An error occurred",
-    "select_file": "Select backup file"
+    "select_file": "Select backup file",
+    "steam_backup_btn": "Steam Backup",
+    "steam_restore_btn": "Steam Restore",
+    "steam_copying": "Copying files... This may take a minute.",
+    "steam_restoring": "Restoring files...",
+    "steam_success": "Backup saved to Documents/NexusSteamBackup",
+    "steam_restore_success": "Restore completed successfully!",
+    "steam_no_backup": "No previous backup found."
   },
   "settings": {
     "language": "Language",
@@ -121,7 +150,9 @@
     "info": "Info",
     "booster": "Performance Booster",
     "booster_desc": "Clean RAM and close heavy programs when launching games",
-    "manual_boost": "Boost Now"
+    "manual_boost": "Boost Now",
+    "boost_stats": "Boost complete! Freed {freed} MB | Closed {killed} apps",
+    "encryption_unavailable": "Encryption is not available on this system"
   },
   "performance": {
     "cpu": "CPU",
@@ -135,15 +166,33 @@
   },
   "modal": {
     "close": "Cancel",
+    "ok": "OK",
     "save": "Save",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "save_session": "Save session",
+    "pick_platform": "Choose platform",
+    "pick_platform_first": "① Tap Epic (or another platform) ② Type a name ③ Save session",
+    "steam_auto_hint": "Steam accounts are added automatically when you sign in with “Remember me” enabled.",
+    "platform_save_steps": "Sign in in the launcher first, then type an account name and save (may take a minute — keep this window open).",
+    "account_name_label": "Account name",
+    "account_name_placeholder": "e.g. My main account",
+    "account_name_optional": "(Optional) Leave it empty and the app will auto-name it.",
+    "saving_session": "Saving... keep this window open (may take a minute)",
+    "name_required": "Type an account name in the field first",
+    "open_launcher": "Open launcher",
+    "open_launcher_hint": "Launcher opened. Sign in, then come back and save the session."
   },
   "common": {
     "yes": "Yes",
     "no": "No",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago": "{n} days ago",
+    "weeks_ago": "{n} weeks ago",
+    "months_ago": "{n} months ago"
   },
   "toast": {
     "account_switched": "Switched to account",

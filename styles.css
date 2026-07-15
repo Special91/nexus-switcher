@@ -73,8 +73,8 @@ body::before {
 .sidebar {
     width: 260px;
     background: var(--bg-sidebar);
-    backdrop-filter: blur(40px) saturate(125%);
-    -webkit-backdrop-filter: blur(40px) saturate(125%);
+    backdrop-filter: blur(12px) saturate(125%);
+    -webkit-backdrop-filter: blur(12px) saturate(125%);
     border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -120,7 +120,7 @@ body::before {
     color: var(--text-secondary);
     text-decoration: none;
     border-radius: var(--radius-md);
-    transition: background 0.15s ease;
+    transition: background 0.08s ease;
     position: relative;
     font-size: 0.9rem;
     font-weight: 400;
@@ -321,7 +321,7 @@ body::before {
     border-radius: var(--radius-lg);
     padding: 1.25rem;
     position: relative;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: background 0.08s ease, border-color 0.08s ease;
     overflow: visible;
 }
 
@@ -337,6 +337,318 @@ body::before {
 .active-account {
     border-color: var(--primary);
     background: rgba(96, 205, 255, 0.06);
+}
+
+/* ===== Accounts session layout ===== */
+.accounts-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#accountsHero {
+    width: 100%;
+}
+
+.accounts-section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0 0.25rem;
+}
+
+.accounts-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.session-hero--compact {
+    padding: 1rem 1.25rem;
+}
+
+.session-hero--compact .session-hero-icon-wrap {
+    width: 52px;
+    height: 52px;
+    font-size: 1.5rem;
+}
+
+.session-hero--compact .session-hero-content h2 {
+    font-size: 1.15rem;
+}
+
+.session-hero--compact .session-hero-info p {
+    font-size: 0.85rem;
+}
+
+.session-hero {
+    position: relative;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    padding: 1.5rem 1.75rem;
+}
+
+.session-hero-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+.session-hero--active .session-hero-bg {
+    background: linear-gradient(135deg, rgba(96, 205, 255, 0.18) 0%, rgba(108, 203, 95, 0.12) 45%, transparent 70%);
+}
+
+.session-hero--idle .session-hero-bg {
+    background: linear-gradient(135deg, rgba(252, 225, 0, 0.1) 0%, rgba(96, 205, 255, 0.06) 50%, transparent 80%);
+}
+
+.session-hero--active {
+    border-color: rgba(96, 205, 255, 0.35);
+    box-shadow: 0 4px 24px rgba(96, 205, 255, 0.12);
+}
+
+.session-hero--idle {
+    border-color: rgba(252, 225, 0, 0.25);
+    text-align: center;
+    padding: 2rem 1.5rem;
+}
+
+.session-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.session-hero--idle .session-hero-content {
+    flex-direction: column;
+    align-items: center;
+}
+
+.session-hero-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 0 4px rgba(96, 205, 255, 0.15);
+    overflow: hidden;
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.session-hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.session-hero-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(96, 205, 255, 0.12);
+    border: 1px solid rgba(96, 205, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.session-hero-info {
+    flex: 1;
+    min-width: 180px;
+}
+
+.session-hero--idle .session-hero-info {
+    flex: none;
+    width: 100%;
+}
+
+.session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.session-badge--online {
+    background: rgba(108, 203, 95, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(108, 203, 95, 0.35);
+}
+
+.session-badge--offline {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+
+.session-badge--login {
+    background: rgba(252, 225, 0, 0.15);
+    color: var(--warning);
+    border: 1px solid rgba(252, 225, 0, 0.35);
+}
+
+.session-badge .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+.session-hero-info h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.session-hero--idle .session-hero-info h2 {
+    font-size: 1.35rem;
+}
+
+.session-hero-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+}
+
+.session-hero-meta .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.session-hero-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.session-hero--idle .session-hero-actions {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.account-card--pick {
+    border-style: dashed;
+    border-color: rgba(96, 205, 255, 0.25);
+}
+
+.account-card--pick:hover {
+    border-color: var(--primary);
+    border-style: solid;
+    box-shadow: 0 4px 20px rgba(96, 205, 255, 0.15);
+}
+
+.account-card--other {
+    opacity: 0.92;
+}
+
+.account-card .card-login-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 0.35rem;
+}
+
+.btn-login-acc {
+    background: linear-gradient(180deg, var(--primary-hover), var(--primary));
+    color: #000;
+    border: none;
+    font-weight: 600;
+    width: 100%;
+    box-shadow: 0 2px 12px var(--primary-glow);
+}
+
+.btn-login-acc:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.btn-switch-acc {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid rgba(96, 205, 255, 0.45);
+    font-weight: 600;
+    width: 100%;
+}
+
+.btn-switch-acc:hover {
+    background: rgba(96, 205, 255, 0.1);
+    border-color: var(--primary);
+}
+
+.account-card.active-account {
+    border-color: var(--primary);
+    background: rgba(96, 205, 255, 0.08);
+    box-shadow: 0 0 0 1px rgba(96, 205, 255, 0.2);
+}
+
+.accounts-grid.accounts-grid--with-hero {
+    margin-top: 0;
+}
+
+.accounts-platform-block {
+    margin-bottom: 0.5rem;
+}
+
+.accounts-platform-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.accounts-platform-title i {
+    font-size: 1.25rem;
+}
+
+.platform-accounts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.platform-section .platform-hero-slot {
+    margin-bottom: 0.75rem;
+}
+
+.platform-section .platform-section-label {
+    margin-bottom: 0.5rem;
 }
 
 .card-header {
@@ -509,9 +821,9 @@ body::before {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -549,6 +861,99 @@ body::before {
     margin-bottom: 0.4rem;
 }
 
+.add-account-modal .platform-select-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.add-account-modal .platform-select-btn {
+    flex: 1 1 auto;
+    min-width: 4.5rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--border);
+    background: transparent;
+}
+
+.add-account-modal .platform-select-btn.active {
+    border-color: var(--primary);
+    background: rgba(96, 205, 255, 0.12);
+}
+
+.add-modal-step-hint {
+    font-size: 0.85rem;
+    color: var(--primary);
+    margin: 0 0 1rem;
+    line-height: 1.5;
+    padding: 0.65rem 0.75rem;
+    background: rgba(96, 205, 255, 0.08);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(96, 205, 255, 0.25);
+}
+
+.add-modal-info-text,
+.add-modal-warn-text {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+}
+
+.add-modal-warn-text {
+    color: #ffb700;
+    padding: 0.75rem;
+    background: rgba(255, 183, 0, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 183, 0, 0.3);
+}
+
+.add-account-name-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 1rem;
+    pointer-events: auto;
+}
+
+.add-account-name-group input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.add-modal-busy-text {
+    color: var(--primary);
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem;
+}
+
+.add-account-modal.add-account-modal--busy .add-account-name-group input {
+    opacity: 0.7;
+}
+
+.accounts-platform-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.accounts-platform-title .platform-save-session-btn {
+    margin-right: auto;
+    margin-left: 0;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+}
+
+[dir="ltr"] .accounts-platform-title .platform-save-session-btn {
+    margin-right: 0;
+    margin-left: auto;
+}
+
 .modal input {
     width: 100%;
     padding: 0.55rem 0.75rem;
@@ -584,7 +989,7 @@ body::before {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     margin-bottom: 0.5rem;
-    transition: background 0.15s ease;
+    transition: background 0.08s ease;
 }
 
 .setting-row:hover {
@@ -640,7 +1045,7 @@ body::before {
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.25rem;
-    transition: background 0.15s ease;
+    transition: background 0.08s ease;
 }
 
 .booster-card:hover {
@@ -669,14 +1074,14 @@ body::before {
 
 /* ===== Animations (Reduced) ===== */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(3px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .account-card,
 .setting-row,
 .booster-card {
-    animation: fadeIn 0.2s ease;
+    animation: fadeIn 0.12s ease;
 }
 
 /* ===== Empty State ===== */
@@ -715,7 +1120,7 @@ body::before {
 /* Notes button - on hover or when has-notes */
 .notes-btn {
     background: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(2px);
 }
 
 .notes-btn.has-notes {
@@ -739,7 +1144,7 @@ body::before {
 
 .perf-bar {
     height: 100%;
-    transition: width 0.5s ease, background 0.3s ease;
+    transition: width 0.2s ease, background 0.15s ease;
     border-radius: 4px;
 }
 
@@ -791,16 +1196,16 @@ body::before {
 
 /* Smooth section transitions */
 .view-section {
-    animation: fadeIn 0.25s ease;
+    animation: fadeIn 0.12s ease;
 }
 
 /* Color picker buttons */
 .color-btn {
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.08s ease, border-color 0.08s ease;
 }
 
 .color-btn:hover {
-    transform: scale(1.1);
+    transform: scale(1.08);
 }
 
 /* Theme toggle (lang switcher) */
@@ -836,13 +1241,13 @@ body::before {
     color: var(--text-main);
     font-size: 0.875rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(4px);
     background: rgba(20, 24, 32, 0.95);
     display: flex;
     align-items: center;
     gap: 0.75rem;
     pointer-events: auto;
-    animation: toastSlideIn 0.3s ease forwards;
+    animation: toastSlideIn 0.15s ease forwards;
     min-width: 280px;
 }
 
@@ -852,7 +1257,7 @@ body::before {
 }
 
 .toast.toast-hide {
-    animation: toastSlideOut 0.25s ease forwards;
+    animation: toastSlideOut 0.12s ease forwards;
 }
 
 .toast-icon {
@@ -1019,12 +1424,12 @@ body::before {
     height: 6px;
     border-radius: 50%;
     background: currentColor;
-    animation: pulse 2s ease-in-out infinite;
+    animation: pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    50% { opacity: 0.5; }
 }
 
 /* ===== Free Games Scroll ===== */
@@ -1050,12 +1455,12 @@ body::before {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     overflow: hidden;
-    transition: transform 0.2s, border-color 0.2s;
+    transition: transform 0.1s ease, border-color 0.1s ease;
     cursor: pointer;
     flex-shrink: 0;
 }
 .free-game-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-color: #107c10;
 }
 .free-game-card img {

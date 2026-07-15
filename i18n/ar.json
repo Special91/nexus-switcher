@@ -7,24 +7,9 @@
     "accounts": "حسابات ستيم",
     "launcher": "اللانشر الموحد",
     "games": "مكتبة الألعاب",
-    "controller": "الكنترولر",
     "backup": "النسخ الاحتياطي",
     "settings": "الإعدادات",
     "performance": "مراقبة الأداء"
-  },
-  "controller": {
-    "title": "الكنترولر",
-    "waiting": "في انتظار توصيل يد التحكم...",
-    "connected": "متصل",
-    "calibration": "معايرة الكنترولر",
-    "calib_desc": "إذا كانت إحدى العصي تتحرك من تلقاء نفسها (Stick Drift)، يمكنك معايرتها من هنا لتعمل بشكل مثالي داخل الألعاب.",
-    "deadzone": "المنطقة الميتة (Deadzone):",
-    "recenter_desc": "اترك العصي تماماً ثم اضغط الزر للتصفير:",
-    "recenter": "تصفير المركز",
-    "overclock": "كسر سرعة الاستجابة (Overclock)",
-    "overclock_desc": "إلغاء توفير الطاقة لـ USB وتقليل تأخير الاستجابة (Input Lag) لـ 1ms",
-    "enable_overclock": "تفعيل (1ms)",
-    "overclocked": "مفعل (1ms)"
   },
   "header": {
     "accounts_title": "كتالوج الحسابات",
@@ -33,8 +18,6 @@
     "launcher_desc": "تشغيل جميع المنصات من مكان واحد",
     "games_title": "مكتبة الألعاب",
     "games_desc": "جميع ألعابك المثبتة في الجهاز",
-    "controller_title": "مركز الكنترولر",
-    "controller_desc": "فحص، معايرة، وإدارة أيادي التحكم",
     "backup_title": "النسخ الاحتياطي",
     "backup_desc": "حماية بياناتك من التلف أو الفقدان",
     "settings_title": "الإعدادات",
@@ -48,6 +31,8 @@
   },
   "account": {
     "current": "الحساب الحالي",
+    "logged_in": "داخل الحساب",
+    "login": "دخول للحساب",
     "active_now": "نشط الآن",
     "switch": "تبديل للحساب",
     "switching": "جاري التبديل...",
@@ -60,9 +45,46 @@
     "games_owned": "لعبة",
     "wallet_balance": "الرصيد",
     "no_balance": "غير متاح",
-    "save_notes": "حفظ"
+    "save_notes": "حفظ",
+    "other_accounts": "حسابات أخرى",
+    "all_accounts": "جميع الحسابات",
+    "choose_account": "اختر حساباً للدخول",
+    "open_profile": "فتح الملف الشخصي",
+    "login_hint": "اضغط للدخول بهذا الحساب"
+    ,
+    "rename": "إعادة تسمية",
+    "rename_prompt": "اكتب الاسم الجديد للحساب:",
+    "rename_exists": "هذا الاسم موجود بالفعل"
+  },
+  "launcher": {
+    "launch": "تشغيل المنصة",
+    "launching": "جاري التشغيل..."
+  },
+  "platform": {
+    "no_session_title": "لا يوجد حساب نشط",
+    "no_session_desc": "اختر حساباً أدناه واضغط «دخول للحساب» أو افتح اللانشر وسجّل الدخول ثم احفظ الجلسة.",
+    "open_launcher": "فتح اللانشر",
+    "launcher_running": "اللانشر يعمل",
+    "launcher_stopped": "اللانشر متوقف",
+    "epic_switch_hint": "تم التبديل. انتظر 15–30 ثانية. إذا ظهر تسجيل الدخول: أعد حفظ الجلسة بعد تسجيل الدخول في Epic.",
+    "epic_save_hint": "لـ Epic: سجّل دخولك في اللانشر ثم احفظ الجلسة (يُحفظ Config + Registry مثل TcNo). أعد الحفظ لكل حساب بعد هذا التحديث.",
+    "save_session_btn": "حفظ جلسة جديدة"
+  },
+  "steam": {
+    "path_not_found": "تعذر العثور على مسار Steam.",
+    "no_accounts": "لا يوجد حسابات مسجلة حالياً في Steam.",
+    "no_session_title": "لا يوجد حساب نشط",
+    "no_session_desc": "اختر أحد الحسابات أدناه واضغط «دخول للحساب» لفتح Steam وتسجيل الدخول.",
+    "session_active_title": "أنت داخل الحساب",
+    "session_active_desc": "الحسابات الأخرى يمكن التبديل إليها بضغطة واحدة.",
+    "open_steam_login": "فتح Steam لتسجيل الدخول",
+    "steam_online": "Steam يعمل",
+    "steam_offline": "Steam متوقف",
+    "offline_pick_account": "Steam مغلق — {n} حساب محفوظ. اختر حساباً من القائمة أدناه أو انزل لقسم Epic للتبديل.",
+    "show_accounts": "عرض الحسابات"
   },
   "game": {
+    "free_games": "عروض الألعاب المجانية",
     "launch": "تشغيل",
     "launching": "جاري...",
     "boosting": "تعزيز الأداء...",
@@ -92,7 +114,14 @@
     "restoring": "جاري الاستعادة...",
     "success": "تمت العملية بنجاح",
     "error": "حدث خطأ أثناء العملية",
-    "select_file": "اختر ملف النسخة"
+    "select_file": "اختر ملف النسخة",
+    "steam_backup_btn": "نسخ Steam",
+    "steam_restore_btn": "استعادة Steam",
+    "steam_copying": "جاري نسخ الملفات... قد يستغرق ذلك دقيقة.",
+    "steam_restoring": "جاري استعادة الملفات...",
+    "steam_success": "تم النسخ الاحتياطي بنجاح في Documents/NexusSteamBackup",
+    "steam_restore_success": "تمت الاستعادة بنجاح!",
+    "steam_no_backup": "لا توجد نسخة احتياطية سابقة."
   },
   "settings": {
     "language": "اللغة",
@@ -121,7 +150,9 @@
     "info": "معلومات",
     "booster": "وضع تعزيز الأداء",
     "booster_desc": "تنظيف الذاكرة وإغلاق البرامج الثقيلة عند تشغيل اللعبة",
-    "manual_boost": "تعزيز يدوي الآن"
+    "manual_boost": "تعزيز يدوي الآن",
+    "boost_stats": "تم التعزيز! تحرير {freed} MB | إغلاق {killed} برنامج",
+    "encryption_unavailable": "التشفير غير متاح في هذا النظام"
   },
   "performance": {
     "cpu": "المعالج",
@@ -135,15 +166,33 @@
   },
   "modal": {
     "close": "إلغاء",
+    "ok": "حسناً",
     "save": "حفظ",
-    "confirm": "تأكيد"
+    "confirm": "تأكيد",
+    "save_session": "حفظ الجلسة",
+    "pick_platform": "اختر المنصة",
+    "pick_platform_first": "① اضغط Epic (أو منصة أخرى) ② اكتب الاسم في الحقل ③ اضغط حفظ الجلسة",
+    "steam_auto_hint": "حسابات Steam تضاف تلقائياً عند تسجيل الدخول في Steam مع تفعيل «تذكرني».",
+    "platform_save_steps": "سجّل الدخول في اللانشر أولاً، ثم اكتب اسماً للحساب واضغط حفظ الجلسة (قد يستغرق دقيقة — لا تغلق النافذة).",
+    "account_name_label": "اسم الحساب",
+    "account_name_placeholder": "مثال: حسابي الأول",
+    "account_name_optional": "(اختياري) إذا تركته فاضي، التطبيق يسميه تلقائياً.",
+    "saving_session": "جاري الحفظ... لا تغلق النافذة (قد يستغرق دقيقة)",
+    "name_required": "اكتب اسم الحساب في الحقل أولاً",
+    "open_launcher": "فتح اللانشر",
+    "open_launcher_hint": "تم فتح اللانشر. سجّل دخولك ثم ارجع واكتب اسم الحساب واضغط حفظ الجلسة."
   },
   "common": {
     "yes": "نعم",
     "no": "لا",
     "loading": "جاري التحميل...",
     "error": "خطأ",
-    "success": "نجح"
+    "success": "نجح",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "days_ago": "قبل {n} أيام",
+    "weeks_ago": "قبل {n} أسابيع",
+    "months_ago": "قبل {n} أشهر"
   },
   "toast": {
     "account_switched": "تم التبديل إلى الحساب",

@@ -2,10 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com data:; img-src 'self' file: data: https: http:; connect-src 'self' https:; media-src 'self' file:;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="app.title">Nexus Switcher | مدير حسابات الألعاب</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'">
 </head>
 <body>
     <div class="app-container">
@@ -84,7 +85,18 @@
             <div class="content-area">
                 <!-- Accounts View -->
                 <div id="view-accounts" class="view-section active">
-                    <div class="accounts-grid" id="accountsGrid"></div>
+                    <div class="accounts-layout" id="accountsLayout">
+                        <section class="accounts-platform-block" id="steamAccountsBlock">
+                            <div class="accounts-platform-title">
+                                <i class="fa-brands fa-steam"></i>
+                                <span>Steam</span>
+                            </div>
+                            <div id="accountsHero"></div>
+                            <div class="accounts-section-label" id="accountsSectionLabel" style="display: none;"></div>
+                            <div class="accounts-grid" id="accountsGrid"></div>
+                        </section>
+                        <div id="platformAccountsContainer" class="platform-accounts-container"></div>
+                    </div>
                 </div>
 
                 <!-- Launcher View -->
@@ -101,7 +113,7 @@
                                 <p class="steam-id">Steam Platform</p>
                             </div>
                             <div class="card-actions">
-                                <button class="btn btn-switch launch-platform-btn" data-platform="steam">Launch</button>
+                                <button class="btn btn-switch launch-platform-btn" data-platform="steam" data-i18n-label="launcher.launch">Launch</button>
                             </div>
                         </div>
                         <div class="account-card">
@@ -115,7 +127,7 @@
                                 <p class="steam-id">Epic Platform</p>
                             </div>
                             <div class="card-actions">
-                                <button class="btn btn-switch launch-platform-btn" data-platform="epic">Launch</button>
+                                <button class="btn btn-switch launch-platform-btn" data-platform="epic" data-i18n-label="launcher.launch">Launch</button>
                             </div>
                         </div>
                         <div class="account-card">
@@ -129,7 +141,7 @@
                                 <p class="steam-id">Blizzard</p>
                             </div>
                             <div class="card-actions">
-                                <button class="btn btn-switch launch-platform-btn" data-platform="battlenet">Launch</button>
+                                <button class="btn btn-switch launch-platform-btn" data-platform="battlenet" data-i18n-label="launcher.launch">Launch</button>
                             </div>
                         </div>
                         <div class="account-card">
@@ -143,7 +155,7 @@
                                 <p class="steam-id">Xbox</p>
                             </div>
                             <div class="card-actions">
-                                <button class="btn btn-switch launch-platform-btn" data-platform="xbox">Launch</button>
+                                <button class="btn btn-switch launch-platform-btn" data-platform="xbox" data-i18n-label="launcher.launch">Launch</button>
                             </div>
                         </div>
                         <div class="account-card">
@@ -157,7 +169,7 @@
                                 <p class="steam-id">Electronic Arts</p>
                             </div>
                             <div class="card-actions">
-                                <button class="btn btn-switch launch-platform-btn" data-platform="ea">Launch</button>
+                                <button class="btn btn-switch launch-platform-btn" data-platform="ea" data-i18n-label="launcher.launch">Launch</button>
                             </div>
                         </div>
                     </div>
@@ -365,7 +377,7 @@
                             <h3 data-i18n="backup.create_backup">إنشاء نسخة احتياطية</h3>
                             <p class="steam-id" style="margin-bottom: 1rem;">Steam config + userdata</p>
                             <button class="btn" id="btnBackup" style="width: 100%;">
-                                <i class="fa-solid fa-copy"></i> Steam Backup
+                                <i class="fa-solid fa-copy"></i> <span data-i18n="backup.steam_backup_btn">نسخ Steam</span>
                             </button>
                         </div>
                         <div class="account-card" style="text-align: center; display: block;">
@@ -373,7 +385,7 @@
                             <h3 data-i18n="backup.restore_backup">استعادة من نسخة</h3>
                             <p class="steam-id" style="margin-bottom: 1rem;">Steam config + userdata</p>
                             <button class="btn" id="btnRestore" style="width: 100%;">
-                                <i class="fa-solid fa-rotate-left"></i> Steam Restore
+                                <i class="fa-solid fa-rotate-left"></i> <span data-i18n="backup.steam_restore_btn">استعادة Steam</span>
                             </button>
                         </div>
                     </div>
@@ -463,51 +475,50 @@
 
     <!-- Multi-Platform Add Account Modal -->
     <div class="modal-overlay" id="addAccountModal">
-        <div class="modal" style="max-width: 500px;">
+        <div class="modal add-account-modal" id="addAccountModalPanel" style="max-width: 500px;">
             <h2 data-i18n="header.add_account">إضافة حساب جديد</h2>
+
+            <p class="add-modal-step-hint" id="addModalStepHint" data-i18n="modal.pick_platform_first">① اضغط منصة Epic (أو غيرها) ② اكتب الاسم ③ احفظ الجلسة</p>
             
             <div class="form-group">
-                <label style="margin-bottom: 0.5rem; display: block; color: var(--text-muted);">اختر المنصة / Platform</label>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                    <button class="btn platform-select-btn active" data-plat="steam" style="flex: 1; padding: 0.5rem; border: 1px solid var(--primary); background: rgba(96,205,255,0.1);"><i class="fa-brands fa-steam"></i> Steam</button>
-                    <button class="btn platform-select-btn" data-plat="epic" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border);"><i class="fa-solid fa-e"></i> Epic</button>
-                    <button class="btn platform-select-btn" data-plat="riot" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border);"><i class="fa-solid fa-r"></i> Riot</button>
-                    <button class="btn platform-select-btn" data-plat="ea" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border);">EA App</button>
-                    <button class="btn platform-select-btn" data-plat="ubisoft" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border);">Ubisoft</button>
-                    <button class="btn platform-select-btn" data-plat="battlenet" style="flex: 1; padding: 0.5rem; border: 1px solid var(--border);"><i class="fa-brands fa-battle-net"></i> Battle.net</button>
+                <label style="margin-bottom: 0.5rem; display: block; color: var(--text-muted);" data-i18n="modal.pick_platform">اختر المنصة</label>
+                <div class="platform-select-row">
+                    <button type="button" class="btn platform-select-btn active" data-plat="steam"><i class="fa-brands fa-steam"></i> Steam</button>
+                    <button type="button" class="btn platform-select-btn" data-plat="epic"><i class="fa-solid fa-e"></i> Epic</button>
+                    <button type="button" class="btn platform-select-btn" data-plat="riot"><i class="fa-solid fa-r"></i> Riot</button>
+                    <button type="button" class="btn platform-select-btn" data-plat="ea">EA</button>
+                    <button type="button" class="btn platform-select-btn" data-plat="ubisoft">Ubisoft</button>
+                    <button type="button" class="btn platform-select-btn" data-plat="battlenet"><i class="fa-brands fa-battle-net"></i> BN</button>
                 </div>
             </div>
 
-            <!-- Steam Instructions -->
-            <div id="steamAddInstructions" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-bottom: 1.5rem;">
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.6;">
-                    <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i>
-                    حسابات <strong>Steam</strong> تضاف تلقائياً!<br>
-                    فقط قم بتسجيل الدخول في تطبيق ستيم وضع علامة (صح) على "تذكر كلمة المرور"، وسيقوم Nexus Switcher باكتشاف الحساب وحفظه في الكتالوج مباشرة.
+            <div id="steamAddInstructions" class="add-modal-panel add-modal-panel--steam">
+                <p class="add-modal-info-text" data-i18n="modal.steam_auto_hint">حسابات Steam تضاف تلقائياً عند تسجيل الدخول في تطبيق Steam مع تفعيل «تذكرني».</p>
+            </div>
+
+            <div id="otherAddInstructions" class="add-modal-panel add-modal-panel--platform" style="display: none;">
+                <p class="add-modal-warn-text" data-i18n="modal.platform_save_steps">سجّل الدخول في اللانشر أولاً، ثم اكتب اسماً للحساب هنا واضغط حفظ الجلسة (قد يستغرق دقيقة).</p>
+            </div>
+
+            <div class="form-group add-account-name-group" id="addAccountNameGroup" style="display: none;">
+                <label for="otherAccountNameInput" data-i18n="modal.account_name_label">اسم الحساب</label>
+                <p style="margin: 0 0 0.4rem; color: var(--text-muted); font-size: 0.8rem;" data-i18n="modal.account_name_optional">
+                    (اختياري) إذا تركته فاضي، التطبيق يسميه تلقائياً.
                 </p>
+                <input type="text" id="otherAccountNameInput" autocomplete="off" spellcheck="false"
+                    data-i18n-placeholder="modal.account_name_placeholder"
+                    placeholder="مثال: حسابي الأول">
             </div>
 
-            <!-- Other Platforms Instructions -->
-            <div id="otherAddInstructions" style="display: none;">
-                <div style="background: rgba(255, 183, 0, 0.1); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid rgba(255, 183, 0, 0.3); margin-bottom: 1rem;">
-                    <p style="font-size: 0.85rem; color: #ffb700; margin: 0; line-height: 1.6;">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <strong>طريقة الحفظ:</strong><br>
-                        1. افتح اللانشر الرسمي وسجل الدخول بالحساب.<br>
-                        2. تأكد من أن اللانشر يعمل والحساب مسجل.<br>
-                        3. اكتب اسم الحساب بالأسفل واضغط (حفظ الجلسة).
-                    </p>
-                </div>
-                <div class="form-group">
-                    <label>اسم الحساب / Account Name</label>
-                    <input type="text" id="otherAccountNameInput" placeholder="أدخل اسم الحساب هنا..." style="width: 100%; padding: 0.75rem; background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: white;">
-                </div>
-            </div>
+            <p class="add-modal-busy-text" id="addModalBusyText" style="display: none;"></p>
 
-            <div class="modal-actions" style="margin-top: 1.5rem;">
-                <button class="btn close-modal" id="cancelAddModalBtn" data-i18n="modal.close">إلغاء</button>
-                <button class="btn btn-primary" id="saveSessionBtn" style="display: none;"><i class="fa-solid fa-floppy-disk"></i> حفظ الجلسة</button>
-                <button class="btn btn-primary close-modal" id="okAddModalBtn">حسناً</button>
+            <div class="modal-actions add-modal-actions">
+                <button type="button" class="btn" id="cancelAddModalBtn" data-i18n="modal.close">إلغاء</button>
+                <button type="button" class="btn" id="openLauncherFromAddModalBtn" style="display: none;">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> <span data-i18n="modal.open_launcher">فتح اللانشر</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="saveSessionBtn" style="display: none;"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="modal.save_session">حفظ الجلسة</span></button>
+                <button type="button" class="btn btn-primary close-modal" id="okAddModalBtn" data-i18n="modal.ok">حسناً</button>
             </div>
         </div>
     </div>
