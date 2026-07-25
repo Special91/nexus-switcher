@@ -132,6 +132,13 @@ function applyTranslations() {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
 
+    // Launch buttons keep their label in data-i18n-label (restored after a click),
+    // so translate their text and refresh the cached label on every language change.
+    document.querySelectorAll('[data-i18n-label]').forEach(el => {
+        const label = t(el.getAttribute('data-i18n-label'));
+        el.setAttribute('data-launch-label', label);
+        if (!el.querySelector('.fa-spin')) el.textContent = label;
+    });
 }
 
 loadTranslations();
@@ -640,6 +647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     launchBtns.forEach(btn => {
         const launchLabel = btn.getAttribute('data-i18n-label') ? t(btn.getAttribute('data-i18n-label')) : t('launcher.launch');
         btn.setAttribute('data-launch-label', launchLabel);
+        btn.textContent = launchLabel;
         btn.addEventListener('click', () => {
             const platform = btn.getAttribute('data-platform');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('launcher.launching')}`;
@@ -770,6 +778,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const otherAccountNameInput = document.getElementById('otherAccountNameInput');
     const saveSessionBtn = document.getElementById('saveSessionBtn');
     const openLauncherFromAddModalBtn = document.getElementById('openLauncherFromAddModalBtn');
+    const epicNewLoginBtn = document.getElementById('epicNewLoginBtn');
+    const epicNewLoginInstructions = document.getElementById('epicNewLoginInstructions');
     const okAddModalBtn = document.getElementById('okAddModalBtn');
     const cancelAddModalBtn = document.getElementById('cancelAddModalBtn');
     let selectedAddPlatform = 'epic';
@@ -812,6 +822,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (addModalStepHint) addModalStepHint.style.display = isSteam ? 'none' : 'block';
         if (saveSessionBtn) saveSessionBtn.style.display = isSteam ? 'none' : 'inline-flex';
         if (openLauncherFromAddModalBtn) openLauncherFromAddModalBtn.style.display = isSteam ? 'none' : 'inline-flex';
+        if (epicNewLoginBtn) epicNewLoginBtn.style.display = isSteam ? 'none' : 'inline-flex';
+        if (epicNewLoginInstructions) epicNewLoginInstructions.style.display = isSteam ? 'none' : 'block';
         if (okAddModalBtn) okAddModalBtn.style.display = isSteam ? 'inline-flex' : 'none';
         if (!isSteam && otherAccountNameInput) {
             setTimeout(() => {
@@ -857,6 +869,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         try { launchPlatformApp(selectedAddPlatform); } catch (e) {}
         showToast(t('modal.open_launcher_hint'), 'info', { duration: 3500 });
         setTimeout(() => otherAccountNameInput?.focus(), 200);
+    });
+
+    // Any launcher: clear the local session (without a server-side sign-out) and
+    // reopen it on the login screen so a NEW account can be added and then saved.
+    epicNewLoginBtn?.addEventListener('click', async () => {
+        if (isSavingPlatformSession || selectedAddPlatform === 'steam') return;
+        const origHtml = epicNewLoginBtn.innerHTML;
+        epicNewLoginBtn.disabled = true;
+        epicNewLoginBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('common.loading')}`;
+        if (addModalBusyText) {
+            addModalBusyText.style.display = 'block';
+            addModalBusyText.textContent = t('modal.epic_new_login_working');
+        }
+        try {
+            const res = await ipcRenderer.invoke('platform-prepare-new-account', selectedAddPlatform);
+            if (res && res.success) {
+                showToast(t('modal.epic_new_login_done'), 'info', { duration: 7000 });
+            } else {
+                showToast((res && res.error) || t('modal.epic_new_login_failed'), 'error');
+            }
+        } catch (e) {
+            showToast(e.message || t('modal.epic_new_login_failed'), 'error');
+        } finally {
+            epicNewLoginBtn.disabled = false;
+            epicNewLoginBtn.innerHTML = origHtml;
+            if (addModalBusyText) addModalBusyText.style.display = 'none';
+            setTimeout(() => otherAccountNameInput?.focus(), 200);
+        }
     });
     document.querySelectorAll('#addAccountModal .close-modal').forEach(btn => {
         btn.addEventListener('click', closeAddAccountModal);
@@ -936,10 +976,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateAutoStartBtn(btn, isEnabled) {
         if (isEnabled) {
-            btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> ${t('settings.enabled')}`;
+            btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> <span data-i18n="settings.enabled">${t('settings.enabled')}</span>`;
             btn.classList.add('active-acc-btn');
         } else {
-            btn.innerHTML = `<i class="fa-solid fa-toggle-off"></i> ${t('settings.disabled')}`;
+            btn.innerHTML = `<i class="fa-solid fa-toggle-off"></i> <span data-i18n="settings.disabled">${t('settings.disabled')}</span>`;
             btn.classList.remove('active-acc-btn');
         }
     }
@@ -1006,11 +1046,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // View Toggle Logic
-    const viewBtns = document.querySelectorAll('.view-toggle-btn');
+    // Scope to real view-mode buttons only: the language pills reuse the
+    // .view-toggle-btn class but carry data-lang (no data-view). Selecting them
+    // here made switching language run applyViewMode(null), which reset the grid
+    // and saved "null" into nexus_view_mode.
+    const viewBtns = document.querySelectorAll('.view-toggle-btn[data-view]');
     const gridsToToggle = ['accountsGrid', 'installedGamesGrid'];
-    
-    // Load saved view
-    const savedView = localStorage.getItem('nexus_view_mode') || 'grid';
+
+    // Load saved view (sanitize any legacy corrupted value)
+    const savedView = localStorage.getItem('nexus_view_mode') === 'list' ? 'list' : 'grid';
     applyViewMode(savedView);
     
     viewBtns.forEach(btn => {
@@ -1054,12 +1098,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateGameBoosterUI() {
         if (toggleGameBoosterBtn) {
             if (isGameBoosterEnabled) {
-                toggleGameBoosterBtn.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--success);"></i> <span style="color: var(--success);">${t('settings.enabled')}</span>`;
+                toggleGameBoosterBtn.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--success);"></i> <span data-i18n="settings.enabled" style="color: var(--success);">${t('settings.enabled')}</span>`;
                 toggleGameBoosterBtn.style.borderColor = 'var(--success)';
                 toggleGameBoosterBtn.style.background = 'rgba(16,185,129,0.1)';
                 if (boosterSection) boosterSection.style.display = 'block';
             } else {
-                toggleGameBoosterBtn.innerHTML = `<i class="fa-solid fa-power-off"></i> <span>${t('settings.disabled')}</span>`;
+                toggleGameBoosterBtn.innerHTML = `<i class="fa-solid fa-power-off"></i> <span data-i18n="settings.disabled">${t('settings.disabled')}</span>`;
                 toggleGameBoosterBtn.style.borderColor = 'var(--border)';
                 toggleGameBoosterBtn.style.background = 'rgba(255,255,255,0.05)';
                 if (boosterSection) boosterSection.style.display = 'none';
@@ -2511,10 +2555,12 @@ window.addEventListener('DOMContentLoaded', async () => {
             setLanguage(lang);
             langButtons.forEach(b => b.classList.toggle('active', b.getAttribute('data-lang') === lang));
             showToast(t('toast.language_changed'), 'info');
-            // Refresh dynamic content
+            // Refresh dynamic content (these are built in JS, so applyTranslations
+            // alone can't re-translate them — re-render with the new language)
             setTimeout(() => {
                 if (typeof loadSteamAccounts === 'function') loadSteamAccounts();
                 if (typeof loadInstalledGames === 'function') loadInstalledGames();
+                if (typeof renderPlatformAccountsSections === 'function') renderPlatformAccountsSections();
             }, 100);
         });
     });
@@ -2671,10 +2717,10 @@ function initVramOptimizer() {
 
 function updateToggleButton(btn, isEnabled) {
     if (isEnabled) {
-        btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> <span>${t('settings.enabled')}</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> <span data-i18n="settings.enabled">${t('settings.enabled')}</span>`;
         btn.classList.add('active-acc-btn');
     } else {
-        btn.innerHTML = `<i class="fa-solid fa-toggle-off"></i> <span>${t('settings.disabled')}</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-toggle-off"></i> <span data-i18n="settings.disabled">${t('settings.disabled')}</span>`;
         btn.classList.remove('active-acc-btn');
     }
 }

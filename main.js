@@ -43,9 +43,12 @@ const ROAMING_APPDATA = path.join(os.homedir(), 'AppData', 'Roaming');
 // Epic session paths (aligned with TcNo Account Switcher Platforms.json)
 const EPIC_SAVED_DIR = path.join(LOCAL_APPDATA, 'EpicGamesLauncher', 'Saved');
 const EPIC_CONFIG_DIR = path.join(EPIC_SAVED_DIR, 'Config');
+// The Epic Games Launcher stores its login RememberMe token in Config\Windows\.
+// WindowsEditor\ belongs to the Unreal Engine editor and can hold a DIFFERENT
+// (stale) token, so Windows must be preferred as the authoritative source.
 const EPIC_GAME_USER_SETTINGS = [
-    path.join(EPIC_CONFIG_DIR, 'WindowsEditor', 'GameUserSettings.ini'),
-    path.join(EPIC_CONFIG_DIR, 'Windows', 'GameUserSettings.ini')
+    path.join(EPIC_CONFIG_DIR, 'Windows', 'GameUserSettings.ini'),
+    path.join(EPIC_CONFIG_DIR, 'WindowsEditor', 'GameUserSettings.ini')
 ];
 // Epic Games Launcher's own namespace id (same for everyone, NOT a user account id)
 const EPIC_LAUNCHER_NAMESPACE_ID = '680103d77ecd4944a13f2a06af3b034e';
@@ -273,6 +276,7 @@ async function restoreEpicUnified(sourceDir, platform) {
         fs.existsSync(path.join(sourceDir, 'registry', 'AccountId.json'));
 
     // 1) Restore the Config folder (contains GameUserSettings.ini with tokens)
+    let configRestored = false;
     const configBackup = isTcNo
         ? path.join(sourceDir, 'Config')
         : path.join(sourceDir, 'Saved', 'Config');
@@ -280,25 +284,33 @@ async function restoreEpicUnified(sourceDir, platform) {
         sendSessionProgress(platform, 'restoring-config');
         await removePathSafe(EPIC_CONFIG_DIR);
         await copyTreeAsync(configBackup, EPIC_CONFIG_DIR);
+        configRestored = true;
         restored++;
     }
 
-    // 2) Ensure GameUserSettings.ini is in place (mirror across Windows/WindowsEditor)
-    let iniBackup = null;
-    if (fs.existsSync(path.join(sourceDir, 'GameUserSettings.ini'))) {
-        iniBackup = path.join(sourceDir, 'GameUserSettings.ini');
-    } else if (fs.existsSync(path.join(sourceDir, 'Saved', 'Config', 'WindowsEditor', 'GameUserSettings.ini'))) {
-        iniBackup = path.join(sourceDir, 'Saved', 'Config', 'WindowsEditor', 'GameUserSettings.ini');
-    } else if (fs.existsSync(path.join(sourceDir, 'Saved', 'Config', 'Windows', 'GameUserSettings.ini'))) {
-        iniBackup = path.join(sourceDir, 'Saved', 'Config', 'Windows', 'GameUserSettings.ini');
-    }
-    if (iniBackup) {
-        sendSessionProgress(platform, 'restoring-ini');
-        for (const dest of EPIC_GAME_USER_SETTINGS) {
-            await fsp.mkdir(path.dirname(dest), { recursive: true });
-            await copyTreeAsync(iniBackup, dest);
+    // 2) Legacy fallback ONLY: reconstruct GameUserSettings.ini from a standalone
+    // copy for old backups that have no full Config folder. When the Config folder
+    // was restored above, Windows\ and WindowsEditor\ are already exact copies of
+    // what was saved — those two files legitimately hold DIFFERENT tokens, so
+    // cross-mirroring one over both would overwrite the launcher's real RememberMe
+    // token in Windows\ and break auto-login. Hence we skip the mirror in that case.
+    if (!configRestored) {
+        let iniBackup = null;
+        if (fs.existsSync(path.join(sourceDir, 'GameUserSettings.ini'))) {
+            iniBackup = path.join(sourceDir, 'GameUserSettings.ini');
+        } else if (fs.existsSync(path.join(sourceDir, 'Saved', 'Config', 'Windows', 'GameUserSettings.ini'))) {
+            iniBackup = path.join(sourceDir, 'Saved', 'Config', 'Windows', 'GameUserSettings.ini');
+        } else if (fs.existsSync(path.join(sourceDir, 'Saved', 'Config', 'WindowsEditor', 'GameUserSettings.ini'))) {
+            iniBackup = path.join(sourceDir, 'Saved', 'Config', 'WindowsEditor', 'GameUserSettings.ini');
         }
-        restored++;
+        if (iniBackup) {
+            sendSessionProgress(platform, 'restoring-ini');
+            for (const dest of EPIC_GAME_USER_SETTINGS) {
+                await fsp.mkdir(path.dirname(dest), { recursive: true });
+                await copyTreeAsync(iniBackup, dest);
+            }
+            restored++;
+        }
     }
 
     // 3) Restore registry AccountId (from new backup, else derive from old backup)
@@ -769,6 +781,95 @@ ipcMain.handle('launch-platform', (event, platform) => {
         return { success: true };
     }
     return { success: false };
+});
+
+// Prepare any launcher for adding a NEW account without a server-side sign-out.
+// Signing out via the launcher's own UI can revoke the saved login token, which
+// invalidates existing backups. Instead we close the launcher, clear ONLY the
+// local session, and reopen it on the login screen — the account stays valid on
+// the launcher's servers, so its backup can still be restored with auto-login.
+async function epicPrepareNewAccount(info, platform) {
+    // Best-effort: preserve the currently signed-in account by re-saving its live
+    // session into the matching slot (identified reliably via live registry id).
+    let backedUp = null;
+    try {
+        const platDir = path.join(SESSIONS_DIR, platform);
+        const liveId = await readRegistryString(
+            EPIC_REGISTRY.hive, EPIC_REGISTRY.key, EPIC_REGISTRY.valueName
+        );
+        if (liveId && fs.existsSync(platDir)) {
+            for (const name of fs.readdirSync(platDir)) {
+                const slotDir = path.join(platDir, name);
+                try { if (!fs.statSync(slotDir).isDirectory()) continue; } catch (e) { continue; }
+                let slotId = null;
+                try {
+                    slotId = JSON.parse(
+                        fs.readFileSync(path.join(slotDir, 'registry', 'AccountId.json'), 'utf-8')
+                    ).value;
+                } catch (e) {}
+                if (!slotId) slotId = deriveEpicAccountIdFromBackup(slotDir);
+                if (slotId && slotId.toLowerCase() === liveId.toLowerCase()) {
+                    await saveSessionFromPlatform(info, slotDir, platform);
+                    backedUp = name;
+                    break;
+                }
+            }
+        }
+    } catch (e) {
+        console.error('[epic] pre-clear backup failed:', e.message);
+    }
+
+    // Clear ONLY the local session (no server-side sign-out) so Epic shows login
+    for (const ini of EPIC_GAME_USER_SETTINGS) {
+        try { await removePathSafe(ini); } catch (e) {}
+    }
+    try {
+        await execAsync(
+            `reg delete "${EPIC_REGISTRY.hive}\\${EPIC_REGISTRY.key}" /v "${EPIC_REGISTRY.valueName}" /f`
+        );
+    } catch (e) {}
+    await clearEpicWebCaches();
+    await clearEpicCaches();
+
+    return { success: true, backedUp };
+}
+
+ipcMain.handle('platform-prepare-new-account', async (event, platform) => {
+    try {
+        const info = PLATFORM_INFO[platform];
+        if (!info) throw new Error('Unknown platform.');
+
+        // Close the launcher so its session files aren't locked
+        await killPlatformProcesses(platform);
+
+        let result;
+        if (platform === 'epic' && info.useTcNoStyle) {
+            result = await epicPrepareNewAccount(info, platform);
+        } else {
+            // Generic launchers: the whole session-root folder(s) hold the login, so
+            // clearing them makes the launcher reopen on its login screen. There is no
+            // token-revocation concept here, so previously-saved backups stay valid.
+            // (The UI asks the user to save the current account first to keep it.)
+            let cleared = 0;
+            for (const root of getSessionRoots(info)) {
+                try {
+                    if (fs.existsSync(root.path)) { await removePathSafe(root.path); cleared++; }
+                } catch (e) {
+                    console.error(`[${platform}] clear failed ${root.slot}:`, e.message);
+                }
+            }
+            // No account is signed in locally now
+            const state = readPlatformActiveState();
+            if (state[platform]) { delete state[platform]; writePlatformActiveState(state); }
+            result = { success: true, cleared };
+        }
+
+        // Reopen the launcher → now on the login screen for the new account
+        launchPlatformAppMain(platform);
+        return result;
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
 });
 
 ipcMain.handle('is-platform-running', async (event, platform) => {
