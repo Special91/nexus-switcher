@@ -180,7 +180,12 @@
     "saving_session": "Saving... keep this window open (may take a minute)",
     "name_required": "Type an account name in the field first",
     "open_launcher": "Open launcher",
-    "open_launcher_hint": "Launcher opened. Sign in, then come back and save the session."
+    "open_launcher_hint": "Launcher opened. Sign in, then come back and save the session.",
+    "epic_new_login": "Log in with another account",
+    "epic_new_login_hint": "To add a new account without signing out: save your current account first, then press “Log in with another account” to open the launcher on the login screen.",
+    "epic_new_login_working": "Closing the launcher and preparing the login screen...",
+    "epic_new_login_done": "Sign in to the launcher with the new account, then come back, type its name and save the session.",
+    "epic_new_login_failed": "Could not prepare a new session"
   },
   "common": {
     "yes": "Yes",
