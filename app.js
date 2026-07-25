@@ -132,6 +132,13 @@ function applyTranslations() {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
 
+    // Launch buttons keep their label in data-i18n-label (restored after a click),
+    // so translate their text and refresh the cached label on every language change.
+    document.querySelectorAll('[data-i18n-label]').forEach(el => {
+        const label = t(el.getAttribute('data-i18n-label'));
+        el.setAttribute('data-launch-label', label);
+        if (!el.querySelector('.fa-spin')) el.textContent = label;
+    });
 }
 
 loadTranslations();
@@ -640,6 +647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     launchBtns.forEach(btn => {
         const launchLabel = btn.getAttribute('data-i18n-label') ? t(btn.getAttribute('data-i18n-label')) : t('launcher.launch');
         btn.setAttribute('data-launch-label', launchLabel);
+        btn.textContent = launchLabel;
         btn.addEventListener('click', () => {
             const platform = btn.getAttribute('data-platform');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('launcher.launching')}`;
