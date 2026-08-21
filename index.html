@@ -65,10 +65,10 @@
                 </div>
                 <div class="header-actions">
                     <div class="view-toggle">
-                        <button class="view-toggle-btn active" data-view="grid" data-i18n-title="header.grid_view" title="عرض شبكي">
+                        <button class="view-toggle-btn active" data-view="grid" data-i18n-title="header.grid_view" data-i18n-aria-label="header.grid_view" title="عرض شبكي">
                             <i class="fa-solid fa-border-all"></i>
                         </button>
-                        <button class="view-toggle-btn" data-view="list" data-i18n-title="header.list_view" title="عرض قائمة">
+                        <button class="view-toggle-btn" data-view="list" data-i18n-title="header.list_view" data-i18n-aria-label="header.list_view" title="عرض قائمة">
                             <i class="fa-solid fa-list"></i>
                         </button>
                     </div>
@@ -184,7 +184,7 @@
                             <h4 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #fff;">
                                 <i class="fa-solid fa-gift" style="color: #107c10;"></i> <span data-i18n="game.free_games">عروض الألعاب المجانية</span>
                             </h4>
-                            <button class="btn" id="refreshFreeGamesBtn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <button class="btn" id="refreshFreeGamesBtn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" data-i18n-title="header.refresh" data-i18n-aria-label="header.refresh" title="تحديث">
                                 <i class="fa-solid fa-arrows-rotate"></i>
                             </button>
                         </div>
@@ -196,9 +196,9 @@
                     <div class="games-controls" style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
                         <div class="search-box" style="flex: 1; position: relative;">
                             <i class="fa-solid fa-search" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
-                            <input type="text" id="gameSearchInput" data-i18n-placeholder="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
+                            <input type="text" id="gameSearchInput" data-i18n-placeholder="game.search_placeholder" data-i18n-aria-label="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
                         </div>
-                        <select id="platformFilter" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5H7z%22/></svg>'); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 16px; padding-left: 2.25rem;">
+                        <select id="platformFilter" data-i18n-aria-label="game.all_platforms" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5H7z%22/></svg>'); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 16px; padding-left: 2.25rem;">
                             <option value="all" data-i18n="game.all_platforms" style="background: #1a1a1a; color: white;">جميع المنصات</option>
                             <option value="steam" style="background: #1a1a1a; color: white;">Steam</option>
                             <option value="epic" style="background: #1a1a1a; color: white;">Epic Games</option>
