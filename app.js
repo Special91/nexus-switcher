@@ -132,6 +132,10 @@ function applyTranslations() {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
 
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+    });
+
 }
 
 loadTranslations();
