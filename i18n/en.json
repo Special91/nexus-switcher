@@ -249,5 +249,12 @@
     "no_data": "No additional data",
     "ago": "ago",
     "never": "Never played"
+  },
+  "colors": {
+    "blue": "Blue Theme",
+    "green": "Green Theme",
+    "pink": "Pink Theme",
+    "purple": "Purple Theme",
+    "yellow": "Yellow Theme"
   }
 }
