@@ -65,10 +65,10 @@
                 </div>
                 <div class="header-actions">
                     <div class="view-toggle">
-                        <button class="view-toggle-btn active" data-view="grid" data-i18n-title="header.grid_view" title="عرض شبكي">
+                        <button class="view-toggle-btn active" data-view="grid" data-i18n-title="header.grid_view" data-i18n-aria-label="header.grid_view" title="عرض شبكي" aria-label="عرض شبكي">
                             <i class="fa-solid fa-border-all"></i>
                         </button>
-                        <button class="view-toggle-btn" data-view="list" data-i18n-title="header.list_view" title="عرض قائمة">
+                        <button class="view-toggle-btn" data-view="list" data-i18n-title="header.list_view" data-i18n-aria-label="header.list_view" title="عرض قائمة" aria-label="عرض قائمة">
                             <i class="fa-solid fa-list"></i>
                         </button>
                     </div>
@@ -184,7 +184,7 @@
                             <h4 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #fff;">
                                 <i class="fa-solid fa-gift" style="color: #107c10;"></i> <span data-i18n="game.free_games">عروض الألعاب المجانية</span>
                             </h4>
-                            <button class="btn" id="refreshFreeGamesBtn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <button class="btn" id="refreshFreeGamesBtn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" data-i18n-aria-label="header.refresh" aria-label="تحديث">
                                 <i class="fa-solid fa-arrows-rotate"></i>
                             </button>
                         </div>
@@ -196,9 +196,9 @@
                     <div class="games-controls" style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
                         <div class="search-box" style="flex: 1; position: relative;">
                             <i class="fa-solid fa-search" style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
-                            <input type="text" id="gameSearchInput" data-i18n-placeholder="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
+                            <input type="text" id="gameSearchInput" data-i18n-aria-label="game.search_placeholder" aria-label="ابحث عن لعبة..." data-i18n-placeholder="game.search_placeholder" placeholder="ابحث عن لعبة..." style="width: 100%; padding: 0.55rem 2.25rem 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); font-family: inherit;">
                         </div>
-                        <select id="platformFilter" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5H7z%22/></svg>'); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 16px; padding-left: 2.25rem;">
+                        <select id="platformFilter" data-i18n-aria-label="modal.pick_platform" aria-label="اختر المنصة" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border-strong); color: var(--text-main); cursor: pointer; font-family: inherit; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M7 10l5 5 5-5H7z%22/></svg>'); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 16px; padding-left: 2.25rem;">
                             <option value="all" data-i18n="game.all_platforms" style="background: #1a1a1a; color: white;">جميع المنصات</option>
                             <option value="steam" style="background: #1a1a1a; color: white;">Steam</option>
                             <option value="epic" style="background: #1a1a1a; color: white;">Epic Games</option>
@@ -414,11 +414,11 @@
                                 <p data-i18n="settings.theme_desc">اختر لون الإضاءة المفضل</p>
                             </div>
                             <div class="theme-colors" style="display: flex; gap: 0.5rem;">
-                                <button class="color-btn" data-color="#60cdff" style="width: 28px; height: 28px; border-radius: 50%; background: #60cdff; border: 2px solid white; cursor: pointer;"></button>
-                                <button class="color-btn" data-color="#6ccb5f" style="width: 28px; height: 28px; border-radius: 50%; background: #6ccb5f; border: 2px solid transparent; cursor: pointer;"></button>
-                                <button class="color-btn" data-color="#ff99a4" style="width: 28px; height: 28px; border-radius: 50%; background: #ff99a4; border: 2px solid transparent; cursor: pointer;"></button>
-                                <button class="color-btn" data-color="#b794f6" style="width: 28px; height: 28px; border-radius: 50%; background: #b794f6; border: 2px solid transparent; cursor: pointer;"></button>
-                                <button class="color-btn" data-color="#fce100" style="width: 28px; height: 28px; border-radius: 50%; background: #fce100; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#60cdff" aria-label="Blue theme" style="width: 28px; height: 28px; border-radius: 50%; background: #60cdff; border: 2px solid white; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#6ccb5f" aria-label="Green theme" style="width: 28px; height: 28px; border-radius: 50%; background: #6ccb5f; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#ff99a4" aria-label="Pink theme" style="width: 28px; height: 28px; border-radius: 50%; background: #ff99a4; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#b794f6" aria-label="Purple theme" style="width: 28px; height: 28px; border-radius: 50%; background: #b794f6; border: 2px solid transparent; cursor: pointer;"></button>
+                                <button class="color-btn" data-color="#fce100" aria-label="Yellow theme" style="width: 28px; height: 28px; border-radius: 50%; background: #fce100; border: 2px solid transparent; cursor: pointer;"></button>
                             </div>
                         </div>
 
@@ -429,7 +429,7 @@
                                 <h4 data-i18n="settings.auto_start">التشغيل التلقائي</h4>
                                 <p data-i18n="settings.auto_start_desc">تشغيل البرنامج تلقائياً عند بدء ويندوز</p>
                             </div>
-                            <button class="btn" id="toggleAutoStart">
+                            <button class="btn" id="toggleAutoStart" data-i18n-aria-label="settings.auto_start" aria-label="التشغيل التلقائي">
                                 <i class="fa-solid fa-spinner fa-spin"></i>
                             </button>
                         </div>
