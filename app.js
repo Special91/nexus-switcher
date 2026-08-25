@@ -132,6 +132,10 @@ function applyTranslations() {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
 
+    document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+    });
+
 }
 
 loadTranslations();
@@ -1399,7 +1403,7 @@ function createAccountCard(steamId, user, { hasActiveSession, isCurrent, pickMod
     card.innerHTML = `
         <div class="card-header">
             <div class="profile-pic placeholder-pic" style="padding: 0;">${avatarHtml}</div>
-            <button class="btn-icon notes-btn ${hasNotes ? 'has-notes' : ''}" data-steamid="${steamId}" data-persona="${personaName}" title="${t('account.notes')}" style="position: absolute; top: 0; left: 0; width: 28px; height: 28px; opacity: ${hasNotes ? '1' : '0'}; transition: opacity 0.2s;">
+            <button class="btn-icon notes-btn ${hasNotes ? 'has-notes' : ''}" data-steamid="${steamId}" data-persona="${personaName}" title="${t('account.notes')}" aria-label="${t('account.notes')}" style="position: absolute; top: 0; left: 0; width: 28px; height: 28px; opacity: ${hasNotes ? '1' : '0'}; transition: opacity 0.2s;">
                 <i class="fa-solid ${hasNotes ? 'fa-note-sticky' : 'fa-pen-to-square'}" style="font-size: 0.75rem;"></i>
             </button>
         </div>
@@ -1414,7 +1418,7 @@ function createAccountCard(steamId, user, { hasActiveSession, isCurrent, pickMod
         </div>
         <div class="card-actions">
             ${actionHtml}
-            <button class="btn-icon dropdown-toggle" data-steamid="${steamId}">
+            <button class="btn-icon dropdown-toggle" data-steamid="${steamId}" aria-label="Options">
                 <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
         </div>`;
@@ -1858,7 +1862,7 @@ async function loadInstalledGames() {
         let bannerHtml = `
             <div class="profile-pic placeholder-pic" style="position: relative; width: 100%; height: 120px; border-radius: 12px; margin-bottom: 1rem; background: rgba(0,0,0,0.3); border: none;">
                 ${game.icon}
-                <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف">
+                <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف" aria-label="تغيير الغلاف">
                     <i class="fa-solid fa-image" style="font-size: 1rem;"></i>
                 </button>
             </div>
@@ -1880,7 +1884,7 @@ async function loadInstalledGames() {
                     <div class="profile-pic placeholder-pic fallback-banner" style="display: none; width: 100%; height: 100%; border-radius: 12px; background: rgba(0,0,0,0.3); border: none; position: absolute; top: 0; left: 0; justify-content: center; align-items: center;">
                         ${game.icon}
                     </div>
-                    <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف">
+                    <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف" aria-label="تغيير الغلاف">
                         <i class="fa-solid fa-image" style="font-size: 1rem;"></i>
                     </button>
                 </div>
