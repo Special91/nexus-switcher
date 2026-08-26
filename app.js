@@ -132,6 +132,9 @@ function applyTranslations() {
         el.title = t(el.getAttribute('data-i18n-title'));
     });
 
+    document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+    });
 }
 
 loadTranslations();
@@ -573,15 +576,28 @@ function renderBoosterProcessList() {
         const item = document.createElement('div');
         item.className = 'booster-process-item';
         item.style.cssText = `display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem; background: ${proc.enabled ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${proc.enabled ? 'rgba(59,130,246,0.2)' : 'var(--border)'}; border-radius: 10px; cursor: pointer; transition: all 0.2s; user-select: none;`;
+        item.setAttribute('role', 'switch');
+        item.setAttribute('aria-checked', proc.enabled ? 'true' : 'false');
+        item.setAttribute('tabindex', '0');
+
         item.innerHTML = `
             <i class="${proc.icon}" style="font-size: 1.1rem; width: 20px; text-align: center; color: ${proc.enabled ? 'var(--primary)' : 'var(--text-muted)'};"></i>
             <span style="flex: 1; font-size: 0.85rem; color: ${proc.enabled ? 'var(--text-main)' : 'var(--text-muted)'};">${proc.label}</span>
             <i class="fa-solid ${proc.enabled ? 'fa-toggle-on' : 'fa-toggle-off'}" style="font-size: 1.2rem; color: ${proc.enabled ? 'var(--primary)' : 'var(--text-muted)'};"></i>
         `;
-        item.addEventListener('click', () => {
+
+        const toggleProc = () => {
             boosterProcesses[index].enabled = !boosterProcesses[index].enabled;
             saveBoosterProcesses();
             renderBoosterProcessList();
+        };
+
+        item.addEventListener('click', toggleProc);
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleProc();
+            }
         });
         item.addEventListener('mouseenter', () => { item.style.background = proc.enabled ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'; });
         item.addEventListener('mouseleave', () => { item.style.background = proc.enabled ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.02)'; });
@@ -935,6 +951,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateAutoStartBtn(btn, isEnabled) {
+        btn.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
         if (isEnabled) {
             btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> ${t('settings.enabled')}`;
             btn.classList.add('active-acc-btn');
@@ -1024,7 +1041,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     function applyViewMode(view) {
         // Update buttons
         viewBtns.forEach(btn => {
-            if (btn.getAttribute('data-view') === view) {
+            const isActive = btn.getAttribute('data-view') === view;
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            if (isActive) {
                 btn.classList.add('active');
                 btn.style.color = 'var(--primary)';
             } else {
@@ -1053,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateGameBoosterUI() {
         if (toggleGameBoosterBtn) {
+            toggleGameBoosterBtn.setAttribute('aria-pressed', isGameBoosterEnabled ? 'true' : 'false');
             if (isGameBoosterEnabled) {
                 toggleGameBoosterBtn.innerHTML = `<i class="fa-solid fa-rocket" style="color: var(--success);"></i> <span style="color: var(--success);">${t('settings.enabled')}</span>`;
                 toggleGameBoosterBtn.style.borderColor = 'var(--success)';
@@ -1399,7 +1419,7 @@ function createAccountCard(steamId, user, { hasActiveSession, isCurrent, pickMod
     card.innerHTML = `
         <div class="card-header">
             <div class="profile-pic placeholder-pic" style="padding: 0;">${avatarHtml}</div>
-            <button class="btn-icon notes-btn ${hasNotes ? 'has-notes' : ''}" data-steamid="${steamId}" data-persona="${personaName}" title="${t('account.notes')}" style="position: absolute; top: 0; left: 0; width: 28px; height: 28px; opacity: ${hasNotes ? '1' : '0'}; transition: opacity 0.2s;">
+            <button class="btn-icon notes-btn ${hasNotes ? 'has-notes' : ''}" data-steamid="${steamId}" data-persona="${personaName}" title="${t('account.notes')}" aria-label="${t('account.notes')}" style="position: absolute; top: 0; left: 0; width: 28px; height: 28px; opacity: ${hasNotes ? '1' : '0'}; transition: opacity 0.2s;">
                 <i class="fa-solid ${hasNotes ? 'fa-note-sticky' : 'fa-pen-to-square'}" style="font-size: 0.75rem;"></i>
             </button>
         </div>
@@ -1414,7 +1434,7 @@ function createAccountCard(steamId, user, { hasActiveSession, isCurrent, pickMod
         </div>
         <div class="card-actions">
             ${actionHtml}
-            <button class="btn-icon dropdown-toggle" data-steamid="${steamId}">
+            <button class="btn-icon dropdown-toggle" data-steamid="${steamId}" aria-label="${t('account.options') || 'Account options'}">
                 <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
         </div>`;
@@ -1526,11 +1546,11 @@ async function renderAccountsGrid(users) {
             popup.className = 'dropdown-popup';
             popup.style.cssText = `position: fixed; top: ${btnRect.top - 6}px; left: ${btnRect.left}px; transform: translateY(-100%); background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 170px; direction: rtl;`;
             popup.innerHTML = `
-                <button class="btn copy-id-btn" data-id="${steamId}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--text-main); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
+                <button class="btn copy-id-btn" data-id="${steamId}" aria-label="${t('account.copy_id')}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--text-main); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
                     <i class="fa-regular fa-copy" style="color: var(--primary);"></i> ${t('account.copy_id')}
                 </button>
                 <hr style="border: 0; border-top: 1px solid var(--border); margin: 0.3rem 0;">
-                <button class="btn delete-acc-btn" data-id="${steamId}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--danger); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
+                <button class="btn delete-acc-btn" data-id="${steamId}" aria-label="${t('account.delete')}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--danger); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
                     <i class="fa-solid fa-trash"></i> ${t('account.delete')}
                 </button>
             `;
@@ -1858,7 +1878,7 @@ async function loadInstalledGames() {
         let bannerHtml = `
             <div class="profile-pic placeholder-pic" style="position: relative; width: 100%; height: 120px; border-radius: 12px; margin-bottom: 1rem; background: rgba(0,0,0,0.3); border: none;">
                 ${game.icon}
-                <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف">
+                <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف" aria-label="تغيير الغلاف">
                     <i class="fa-solid fa-image" style="font-size: 1rem;"></i>
                 </button>
             </div>
@@ -1880,7 +1900,7 @@ async function loadInstalledGames() {
                     <div class="profile-pic placeholder-pic fallback-banner" style="display: none; width: 100%; height: 100%; border-radius: 12px; background: rgba(0,0,0,0.3); border: none; position: absolute; top: 0; left: 0; justify-content: center; align-items: center;">
                         ${game.icon}
                     </div>
-                    <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف">
+                    <button class="btn-icon change-cover-btn" data-game="${game.id || game.name}" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s;" title="تغيير الغلاف" aria-label="تغيير الغلاف">
                         <i class="fa-solid fa-image" style="font-size: 1rem;"></i>
                     </button>
                 </div>
@@ -1897,7 +1917,7 @@ async function loadInstalledGames() {
             } else {
                 accountBadgeHtml = `<span class="game-account-badge" style="font-size: 0.75rem; background: rgba(239,68,68,0.1); color: var(--danger); padding: 0.2rem 0.5rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-circle-question"></i> ${t('game.unknown_owner')}</span>`;
             }
-            assignBtnHtml = `<button class="btn-icon assign-account-btn" data-game-id="${game.id}" data-game-name="${game.name}" title="${t('game.assign_account')}" style="position: absolute; top: 8px; left: 8px; width: 30px; height: 30px; background: rgba(0,0,0,0.7); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s; font-size: 0.85rem;"><i class="fa-solid fa-user-pen"></i></button>`;
+            assignBtnHtml = `<button class="btn-icon assign-account-btn" data-game-id="${game.id}" data-game-name="${game.name}" title="${t('game.assign_account')}" aria-label="${t('game.assign_account')}" style="position: absolute; top: 8px; left: 8px; width: 30px; height: 30px; background: rgba(0,0,0,0.7); border: none; z-index: 10; opacity: 0; transition: opacity 0.2s; font-size: 0.85rem;"><i class="fa-solid fa-user-pen"></i></button>`;
         }
         
         // Playtime badge
@@ -1922,7 +1942,7 @@ async function loadInstalledGames() {
                 <button class="btn btn-switch launch-game-btn" data-platform="${game.platform}" data-id="${game.id}" data-exe="${game.exe || ''}" data-owner="${game.ownerId || ''}" style="flex: 1;">
                     <i class="fa-solid fa-play"></i> ${t('game.launch')}
                 </button>
-                <button class="btn-icon game-info-btn" data-game-id="${game.id}" data-game-name="${game.name}" data-platform="${game.platform}" title="${t('gameinfo.title')}" style="width: 36px; height: 36px;">
+                <button class="btn-icon game-info-btn" data-game-id="${game.id}" data-game-name="${game.name}" data-platform="${game.platform}" title="${t('gameinfo.title')}" aria-label="${t('gameinfo.title')}" style="width: 36px; height: 36px;">
                     <i class="fa-solid fa-circle-info"></i>
                 </button>
             </div>
@@ -2670,6 +2690,7 @@ function initVramOptimizer() {
 }
 
 function updateToggleButton(btn, isEnabled) {
+    btn.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
     if (isEnabled) {
         btn.innerHTML = `<i class="fa-solid fa-toggle-on"></i> <span>${t('settings.enabled')}</span>`;
         btn.classList.add('active-acc-btn');
@@ -2990,7 +3011,7 @@ function createPlatformAccountCard(platform, accName, meta, hasActiveSession, is
         </div>
         <div class="card-actions">
             ${actionHtml}
-            <button class="btn-icon platform-dropdown-btn" data-platform="${platform}" data-account="${accName}">
+            <button class="btn-icon platform-dropdown-btn" data-platform="${platform}" data-account="${accName}" aria-label="${t('account.options') || 'Account options'}">
                 <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
         </div>`;
@@ -3094,10 +3115,10 @@ function bindPlatformAccountActions(sectionEl) {
             popup.className = 'dropdown-popup';
             popup.style.cssText = `position: fixed; top: ${btnRect.top - 6}px; left: ${btnRect.left}px; transform: translateY(-100%); background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem; z-index: 999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 170px; direction: rtl;`;
             popup.innerHTML = `
-                <button class="btn rename-platform-btn" data-platform="${platform}" data-account="${accName}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--text-main); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
+                <button class="btn rename-platform-btn" data-platform="${platform}" data-account="${accName}" aria-label="${t('account.rename')}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--text-main); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
                     <i class="fa-solid fa-pen"></i> ${t('account.rename')}
                 </button>
-                <button class="btn delete-platform-btn" data-platform="${platform}" data-account="${accName}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--danger); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
+                <button class="btn delete-platform-btn" data-platform="${platform}" data-account="${accName}" aria-label="${t('account.delete')}" style="width: 100%; justify-content: flex-start; background: transparent; color: var(--danger); border: none; padding: 0.5rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem; font-family: inherit;">
                     <i class="fa-solid fa-trash"></i> ${t('account.delete')}
                 </button>`;
             document.body.appendChild(popup);
