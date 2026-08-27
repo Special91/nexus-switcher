@@ -1583,3 +1583,12 @@ body::before {
         padding: 1rem;
     }
 }
+
+.btn:focus-visible,
+.btn-icon:focus-visible,
+.view-toggle-btn:focus-visible,
+.color-btn:focus-visible,
+.toast-close:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}

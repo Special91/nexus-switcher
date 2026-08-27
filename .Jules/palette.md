@@ -1,0 +1,3 @@
+## 2025-05-16 - Using `:focus-visible` for Keyboard Navigation Focus States
+**Learning:** Adding a plain `:focus` pseudo-class for keyboard accessibility creates unwanted visual noise when users click elements with a mouse (since the element receives focus upon click).
+**Action:** Use `:focus-visible` instead of `:focus` for interactive elements (like `.btn`, `.btn-icon`, etc.) to provide clear focus indicators for keyboard navigation while keeping the visual experience clean for mouse interactions. This respects both accessibility requirements and visual design constraints.
