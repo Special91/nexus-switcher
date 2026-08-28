@@ -1,0 +1,3 @@
+## 2024-05-24 - Dynamic ARIA Labels in Vanilla JS
+**Learning:** When building localized vanilla JS applications, accessibility attributes like `aria-label` often get missed because standard text replacement loops do not cover them. Adding a specific data attribute pattern (like `data-i18n-aria-label`) allows the global localization loop to seamlessly update accessibility tags alongside visual text.
+**Action:** Always implement a dedicated `data-i18n-aria-label` query handler in vanilla JS i18n logic, and systematically apply it to icon-only buttons, inputs without visible labels, and dynamic toast close buttons.
