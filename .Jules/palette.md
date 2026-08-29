@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for Theme Selector Buttons
+**Learning:** The theme selector uses empty `<button>` tags styled with inline CSS (background colors). Without visible text, these buttons are inaccessible to screen readers, preventing visually impaired users from selecting a theme.
+**Action:** Always provide an `aria-label` attribute (and a mechanism for dynamic translations, like `data-i18n-aria`) on interactive elements that lack visible text, such as icon-only or color-only buttons. Furthermore, a global `:focus-visible` outline helps keyboard users track focus when navigating through such components.
