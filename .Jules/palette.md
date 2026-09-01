@@ -1,0 +1,3 @@
+## 2026-09-01 - Adding Accessible Names to Icon Buttons
+**Learning:** Icon-only buttons needed aria-labels for screen reader support. The codebase uses `data-i18n-*` attributes which map to the locale files. I learned that adding `data-i18n-aria-label` handling directly within `applyTranslations` in `app.js` provides a scalable way to make any future icon-only buttons accessible using existing localized strings.
+**Action:** When adding or modifying interactive UI components (especially icon-only buttons), verify if an accessible name is present and if it's missing, add it via the robust `data-i18n-aria-label` pattern rather than hardcoding.
