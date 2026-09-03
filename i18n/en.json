@@ -50,8 +50,7 @@
     "all_accounts": "All accounts",
     "choose_account": "Choose an account to sign in",
     "open_profile": "Open profile",
-    "login_hint": "Tap to sign in with this account"
-    ,
+    "login_hint": "Tap to sign in with this account",
     "rename": "Rename",
     "rename_prompt": "Type a new name for this account:",
     "rename_exists": "This name already exists"
@@ -192,7 +191,9 @@
     "yesterday": "Yesterday",
     "days_ago": "{n} days ago",
     "weeks_ago": "{n} weeks ago",
-    "months_ago": "{n} months ago"
+    "months_ago": "{n} months ago",
+    "refresh": "Refresh",
+    "options": "Options"
   },
   "toast": {
     "account_switched": "Switched to account",

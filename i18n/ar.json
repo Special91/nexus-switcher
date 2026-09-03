@@ -50,8 +50,7 @@
     "all_accounts": "جميع الحسابات",
     "choose_account": "اختر حساباً للدخول",
     "open_profile": "فتح الملف الشخصي",
-    "login_hint": "اضغط للدخول بهذا الحساب"
-    ,
+    "login_hint": "اضغط للدخول بهذا الحساب",
     "rename": "إعادة تسمية",
     "rename_prompt": "اكتب الاسم الجديد للحساب:",
     "rename_exists": "هذا الاسم موجود بالفعل"
@@ -192,7 +191,9 @@
     "yesterday": "أمس",
     "days_ago": "قبل {n} أيام",
     "weeks_ago": "قبل {n} أسابيع",
-    "months_ago": "قبل {n} أشهر"
+    "months_ago": "قبل {n} أشهر",
+    "refresh": "تحديث",
+    "options": "خيارات"
   },
   "toast": {
     "account_switched": "تم التبديل إلى الحساب",
