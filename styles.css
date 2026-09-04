@@ -62,6 +62,22 @@ body::before {
     z-index: 0;
 }
 
+/* ===== Accessibility: Keyboard Focus ===== */
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm); /* Fallback rounding to look cohesive */
+}
+
 .app-container {
     display: flex;
     height: 100vh;
