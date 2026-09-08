@@ -1,0 +1,3 @@
+## 2025-02-23 - Added Focus Visible Global Styles
+**Learning:** For desktop applications like this that frequently have complex grids of buttons (launchers, platforms, features), ensuring strong visual feedback when users tab via keyboard is essential for accessibility. The app lacked sufficient visual indicators for tab-navigation, making it hard to use without a mouse.
+**Action:** Adding a global `*:focus-visible` to styles leveraging existing `--primary` theme token provides a quick, robust cross-app accessibility boost without relying on custom CSS for every single button type.
