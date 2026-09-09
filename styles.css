@@ -223,6 +223,16 @@ body::before {
     flex-wrap: wrap;
 }
 
+/* ===== Global Focus Visible ===== */
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
 /* ===== Buttons (Fluent) ===== */
 .btn {
     display: inline-flex;
